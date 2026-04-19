@@ -1,5 +1,8 @@
 package com.ashutosh.mindfultennis
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.SnackbarDuration
@@ -9,7 +12,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.collectAsState
@@ -17,6 +22,7 @@ import androidx.navigation.compose.rememberNavController
 import com.ashutosh.mindfultennis.data.repository.AuthRepository
 import com.ashutosh.mindfultennis.data.repository.AuthState
 import com.ashutosh.mindfultennis.navigation.NavGraph
+import com.ashutosh.mindfultennis.ui.components.SplashScreen
 import com.ashutosh.mindfultennis.ui.theme.MindfulTennisTheme
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.timeout
@@ -53,6 +59,10 @@ fun App() {
         // The snackbar above fires on the same frame and stays visible on the Login screen.
         val isAuthenticated = authState is AuthState.Authenticated
 
+        // Splash stays visible until both the animation completes AND auth is resolved.
+        var animationDone by remember { mutableStateOf(false) }
+        val showSplash = !animationDone || authState is AuthState.Loading
+
         Box(modifier = Modifier.fillMaxSize()) {
             Surface(modifier = Modifier.fillMaxSize()) {
                 NavGraph(
@@ -66,6 +76,14 @@ fun App() {
                 hostState = snackbarHostState,
                 modifier = Modifier.align(Alignment.BottomCenter),
             )
+
+            // Animated splash overlay
+            AnimatedVisibility(
+                visible = showSplash,
+                exit = fadeOut(tween(400)),
+            ) {
+                SplashScreen(onAnimationComplete = { animationDone = true })
+            }
         }
     }
 }
