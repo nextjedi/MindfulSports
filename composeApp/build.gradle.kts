@@ -26,7 +26,7 @@ android {
         applicationId = "com.ashutosh.mindfultennis"
         minSdk = 29
         targetSdk = 36
-        versionCode = 6
+        versionCode = 10
         versionName = "1.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -34,6 +34,9 @@ android {
         // Expose Supabase config as BuildConfig fields
         buildConfigField("String", "SUPABASE_URL", "\"${localProperties.getProperty("SUPABASE_URL", "")}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${localProperties.getProperty("SUPABASE_ANON_KEY", "")}\"")
+
+        // RevenueCat Android API key (add REVENUECAT_KEY_ANDROID to local.properties)
+        buildConfigField("String", "REVENUECAT_KEY", "\"${localProperties.getProperty("REVENUECAT_KEY_ANDROID", "")}\"")
     }
 
     signingConfigs {
@@ -78,4 +81,5 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.supabase.bom))
     implementation(libs.supabase.auth)
+    implementation(libs.billing)
 }

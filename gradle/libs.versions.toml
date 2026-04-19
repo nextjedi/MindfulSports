@@ -24,6 +24,7 @@ koin = "4.0.2"
 kotlinxDatetime = "0.6.2"
 kotlinxCoroutines = "1.9.0"
 kermit = "2.0.5"
+revenuecat-kmp = "2.10.2+17.55.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -90,6 +91,13 @@ koin-compose-viewmodel = { group = "io.insert-koin", name = "koin-compose-viewmo
 
 # Kermit logging
 kermit = { group = "co.touchlab", name = "kermit", version.ref = "kermit" }
+
+# RevenueCat KMP
+purchases-kmp-core = { module = "com.revenuecat.purchases:purchases-kmp-core",        version.ref = "revenuecat-kmp" }
+purchases-kmp-ui   = { module = "com.revenuecat.purchases:purchases-kmp-revenuecatui", version.ref = "revenuecat-kmp" }
+
+# Play Billing
+billing = { group = "com.android.billingclient", name = "billing", version = "7.1.1" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -48,6 +48,8 @@
     <string>$(SUPABASE_URL)</string>
     <key>SUPABASE_ANON_KEY</key>
     <string>$(SUPABASE_ANON_KEY)</string>
+    <key>REVENUECAT_KEY</key>
+    <string>$(REVENUECAT_KEY)</string>
     <key>BGTaskSchedulerPermittedIdentifiers</key>
     <array>
         <string>com.nextjedi.mindful-tennis.sync</string>

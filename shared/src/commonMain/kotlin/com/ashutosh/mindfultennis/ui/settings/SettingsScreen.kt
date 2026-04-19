@@ -12,9 +12,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -40,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.ashutosh.mindfultennis.domain.model.SubscriptionStatus
 import com.ashutosh.mindfultennis.ui.theme.Spacing
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
@@ -50,6 +53,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel,
     onNavigateBack: () -> Unit,
     onLoggedOut: () -> Unit,
+    onNavigateToSubscription: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -79,6 +83,7 @@ fun SettingsScreen(
         state = uiState,
         onEvent = viewModel::onEvent,
         onNavigateBack = onNavigateBack,
+        onNavigateToSubscription = onNavigateToSubscription,
         snackbarHostState = snackbarHostState,
         modifier = modifier,
     )
@@ -90,6 +95,7 @@ private fun SettingsScreenContent(
     state: SettingsUiState,
     onEvent: (SettingsUiEvent) -> Unit,
     onNavigateBack: () -> Unit,
+    onNavigateToSubscription: () -> Unit,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
 ) {
@@ -143,6 +149,39 @@ private fun SettingsScreenContent(
                 )
             }
 
+            Spacer(Modifier.height(Spacing.lg))
+            HorizontalDivider()
+            Spacer(Modifier.height(Spacing.lg))
+
+            // Subscription section
+            Text(
+                text = "Subscription",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+
+            Spacer(Modifier.height(Spacing.sm))
+
+            OutlinedButton(
+                onClick = onNavigateToSubscription,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(subscriptionStatusLabel(state.subscriptionStatus))
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(Spacing.lg))
+            HorizontalDivider()
             Spacer(Modifier.height(Spacing.lg))
 
             // Sync section
@@ -293,6 +332,14 @@ private fun DeleteAccountDialog(
             }
         },
     )
+}
+
+private fun subscriptionStatusLabel(status: SubscriptionStatus): String = when (status) {
+    is SubscriptionStatus.Active -> "Premium — Active"
+    is SubscriptionStatus.Trial -> "Premium — Free Trial"
+    is SubscriptionStatus.Cancelled -> "Premium — Cancelled"
+    is SubscriptionStatus.Expired -> "Expired — Upgrade"
+    is SubscriptionStatus.None -> "Free — Upgrade to Premium"
 }
 
 private fun formatSyncTime(epochMs: Long): String {

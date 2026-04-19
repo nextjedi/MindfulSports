@@ -7,6 +7,14 @@ struct iOSApp: App {
     init() {
         let supabaseUrl = Bundle.main.infoDictionary?["SUPABASE_URL"] as? String ?? ""
         let supabaseAnonKey = Bundle.main.infoDictionary?["SUPABASE_ANON_KEY"] as? String ?? ""
+
+        // Configure RevenueCat before Koin so SubscriptionRepositoryImpl can safely
+        // access Purchases.sharedInstance when it is first injected.
+        let revenueCatKey = Bundle.main.infoDictionary?["REVENUECAT_KEY"] as? String ?? ""
+        if !revenueCatKey.isEmpty {
+            PurchasesHelperKt.initPurchases(apiKey: revenueCatKey)
+        }
+
         KoinHelperKt.doInitKoin(supabaseUrl: supabaseUrl, supabaseAnonKey: supabaseAnonKey)
 
         // Register the nightly sync background task handler.

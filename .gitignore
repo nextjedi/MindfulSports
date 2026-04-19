@@ -19,3 +19,4 @@ keystore.properties
 
 # iOS secrets
 iosApp/Configuration/Secrets.xcconfig
+.mcp.json

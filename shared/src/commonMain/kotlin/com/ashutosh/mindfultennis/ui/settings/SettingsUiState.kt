@@ -1,6 +1,9 @@
 package com.ashutosh.mindfultennis.ui.settings
 
+import com.ashutosh.mindfultennis.domain.model.SubscriptionStatus
+
 data class SettingsUiState(
+    val subscriptionStatus: SubscriptionStatus = SubscriptionStatus.None,
     val email: String? = null,
     val displayName: String? = null,
     val isSigningOut: Boolean = false,

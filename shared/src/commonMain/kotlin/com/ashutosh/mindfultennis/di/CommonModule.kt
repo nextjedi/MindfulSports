@@ -15,6 +15,8 @@ import com.ashutosh.mindfultennis.data.repository.PartnerRepository
 import com.ashutosh.mindfultennis.data.repository.PartnerRepositoryImpl
 import com.ashutosh.mindfultennis.data.repository.SessionRepository
 import com.ashutosh.mindfultennis.data.repository.SessionRepositoryImpl
+import com.ashutosh.mindfultennis.data.repository.SubscriptionRepository
+import com.ashutosh.mindfultennis.data.repository.SubscriptionRepositoryImpl
 import com.ashutosh.mindfultennis.data.sync.InitialSyncManager
 import com.ashutosh.mindfultennis.data.sync.SyncManager
 import com.ashutosh.mindfultennis.domain.usecase.CancelSessionUseCase
@@ -22,16 +24,20 @@ import com.ashutosh.mindfultennis.domain.usecase.EndSessionUseCase
 import com.ashutosh.mindfultennis.domain.usecase.GetAspectAveragesUseCase
 import com.ashutosh.mindfultennis.domain.usecase.GetPerformanceTrendUseCase
 import com.ashutosh.mindfultennis.domain.usecase.GetSessionsUseCase
+import com.ashutosh.mindfultennis.domain.usecase.GetSubscriptionStatusUseCase
 import com.ashutosh.mindfultennis.domain.usecase.GetWinLossRecordUseCase
+import com.ashutosh.mindfultennis.domain.usecase.RestorePurchasesUseCase
 import com.ashutosh.mindfultennis.domain.usecase.StartSessionUseCase
 import com.ashutosh.mindfultennis.domain.usecase.SubmitRatingsUseCase
 import com.ashutosh.mindfultennis.ui.endsession.EndSessionViewModel
 import com.ashutosh.mindfultennis.ui.home.HomeViewModel
 import com.ashutosh.mindfultennis.ui.login.LoginViewModel
+import com.ashutosh.mindfultennis.ui.paywall.PaywallViewModel
 import com.ashutosh.mindfultennis.ui.sessions.SessionDetailViewModel
 import com.ashutosh.mindfultennis.ui.sessions.SessionsListViewModel
 import com.ashutosh.mindfultennis.ui.settings.SettingsViewModel
 import com.ashutosh.mindfultennis.ui.startsession.StartSessionViewModel
+import com.ashutosh.mindfultennis.ui.subscription.SubscriptionManagementViewModel
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
@@ -89,6 +95,8 @@ val commonModule = module {
     // ── Repositories ───────────────────────────────────────────────────
 
     single<AuthRepository> { AuthRepositoryImpl(get()) }
+
+    single<SubscriptionRepository> { SubscriptionRepositoryImpl(get()) }
 
     single<SessionRepository> {
         SessionRepositoryImpl(
@@ -162,6 +170,8 @@ val commonModule = module {
     factory { GetWinLossRecordUseCase(get()) }
     factory { GetAspectAveragesUseCase(get()) }
     factory { GetSessionsUseCase(get()) }
+    factory { GetSubscriptionStatusUseCase(get()) }
+    factory { RestorePurchasesUseCase(get()) }
 
     // ── ViewModels ─────────────────────────────────────────────────────
 
@@ -181,7 +191,7 @@ val commonModule = module {
         )
     }
 
-    viewModel { SettingsViewModel(get(), get(), get(), get(), get()) }
+    viewModel { SettingsViewModel(get(), get(), get(), get(), get(), get()) }
 
     viewModel {
         LoginViewModel(
@@ -221,6 +231,15 @@ val commonModule = module {
             sessionRepository = get(),
             opponentRepository = get(),
             partnerRepository = get(),
+        )
+    }
+
+    viewModel { PaywallViewModel(subscriptionRepository = get()) }
+
+    viewModel {
+        SubscriptionManagementViewModel(
+            getSubscriptionStatusUseCase = get(),
+            restorePurchasesUseCase = get(),
         )
     }
 }

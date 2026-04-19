@@ -77,6 +77,9 @@ kotlin {
 
             // Logging
             implementation(libs.kermit)
+
+            // RevenueCat KMP
+            implementation(libs.purchases.kmp.core)
         }
 
         androidMain.dependencies {

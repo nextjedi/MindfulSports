@@ -24,4 +24,7 @@ sealed class Route(val route: String) {
             const val ARG_SESSION_ID = "sessionId"
         }
     }
+
+    data object Paywall : Route("paywall")
+    data object SubscriptionManagement : Route("subscription_management")
 }

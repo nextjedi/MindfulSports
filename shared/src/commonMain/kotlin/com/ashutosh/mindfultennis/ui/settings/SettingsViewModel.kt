@@ -8,6 +8,7 @@ import com.ashutosh.mindfultennis.data.remote.SupabaseUserDataSource
 import com.ashutosh.mindfultennis.data.repository.AuthRepository
 import com.ashutosh.mindfultennis.data.repository.AuthState
 import com.ashutosh.mindfultennis.data.sync.SyncManager
+import com.ashutosh.mindfultennis.domain.usecase.GetSubscriptionStatusUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,6 +22,7 @@ class SettingsViewModel(
     private val syncManager: SyncManager,
     private val supabaseUserDataSource: SupabaseUserDataSource,
     private val mindfulDatabase: MindfulDatabase,
+    private val getSubscriptionStatusUseCase: GetSubscriptionStatusUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -32,6 +34,11 @@ class SettingsViewModel(
             val lastSync = userPreferences.lastSyncTimestamp.first()
             if (lastSync > 0L) {
                 _uiState.update { it.copy(lastSyncTime = lastSync) }
+            }
+        }
+        viewModelScope.launch {
+            getSubscriptionStatusUseCase().collect { status ->
+                _uiState.update { it.copy(subscriptionStatus = status) }
             }
         }
         viewModelScope.launch {

@@ -15,8 +15,12 @@ import com.ashutosh.mindfultennis.ui.home.HomeUiEvent
 import com.ashutosh.mindfultennis.ui.home.HomeViewModel
 import com.ashutosh.mindfultennis.ui.login.LoginScreen
 import com.ashutosh.mindfultennis.ui.login.LoginViewModel
+import com.ashutosh.mindfultennis.ui.paywall.PaywallScreen
+import com.ashutosh.mindfultennis.ui.paywall.PaywallViewModel
 import com.ashutosh.mindfultennis.ui.settings.SettingsScreen
 import com.ashutosh.mindfultennis.ui.settings.SettingsViewModel
+import com.ashutosh.mindfultennis.ui.subscription.SubscriptionManagementScreen
+import com.ashutosh.mindfultennis.ui.subscription.SubscriptionManagementViewModel
 import com.ashutosh.mindfultennis.ui.sessions.SessionDetailScreen
 import com.ashutosh.mindfultennis.ui.sessions.SessionDetailViewModel
 import com.ashutosh.mindfultennis.ui.sessions.SessionsListScreen
@@ -105,6 +109,9 @@ fun NavGraph(
                         popUpTo(0) { inclusive = true }
                     }
                 },
+                onNavigateToSubscription = {
+                    navController.navigate(Route.SubscriptionManagement.route)
+                },
             )
         }
 
@@ -151,6 +158,25 @@ fun NavGraph(
                 },
                 onNavigateBack = {
                     navController.popBackStack()
+                },
+            )
+        }
+
+        composable(Route.Paywall.route) {
+            val viewModel: PaywallViewModel = koinViewModel()
+            PaywallScreen(
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+
+        composable(Route.SubscriptionManagement.route) {
+            val viewModel: SubscriptionManagementViewModel = koinViewModel()
+            SubscriptionManagementScreen(
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToPaywall = {
+                    navController.navigate(Route.Paywall.route)
                 },
             )
         }
