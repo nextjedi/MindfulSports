@@ -25,7 +25,10 @@ import com.ashutosh.mindfultennis.navigation.NavGraph
 import com.ashutosh.mindfultennis.ui.components.SplashScreen
 import com.ashutosh.mindfultennis.ui.theme.MindfulTennisTheme
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.timeout
+import kotlinx.coroutines.flow.transformLatest
 import kotlin.time.Duration.Companion.seconds
 import org.koin.compose.koinInject
 
@@ -36,12 +39,23 @@ fun App() {
         val authRepository = koinInject<AuthRepository>()
         val snackbarHostState = remember { SnackbarHostState() }
 
-        // Timeout guards against the app being stuck on Loading forever (e.g. no network
-        // on cold start). After 10 s with no state change we fall through to Unauthenticated.
-        val authState by authRepository.authState
-            .timeout(10.seconds)
-            .catch { emit(AuthState.Unauthenticated) }
-            .collectAsState(initial = AuthState.Loading)
+        // Only timeout the initial Loading state — once auth resolves, let the
+        // StateFlow sit quietly without killing the subscription.
+        val authState by remember {
+            authRepository.authState
+                .transformLatest { state ->
+                    if (state is AuthState.Loading) {
+                        // Give loading 10s, then fall back to Unauthenticated
+                        kotlinx.coroutines.withTimeoutOrNull(10.seconds) {
+                            // Suspend forever; upstream will cancel this when a
+                            // real state arrives and transformLatest restarts.
+                            kotlinx.coroutines.awaitCancellation()
+                        } ?: emit(AuthState.Unauthenticated)
+                    } else {
+                        emit(state)
+                    }
+                }
+        }.collectAsState(initial = AuthState.Loading)
 
         // Tell the user why they're being sent to the login screen instead of
         // silently dropping them there with no context.

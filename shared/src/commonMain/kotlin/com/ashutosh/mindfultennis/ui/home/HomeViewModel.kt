@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.ashutosh.mindfultennis.data.local.datastore.UserPreferences
 import com.ashutosh.mindfultennis.data.repository.AuthRepository
 import com.ashutosh.mindfultennis.data.repository.AuthState
-import com.ashutosh.mindfultennis.data.repository.FocusPointRepository
 import com.ashutosh.mindfultennis.data.repository.OpponentRepository
 import com.ashutosh.mindfultennis.data.repository.SessionRepository
 import com.ashutosh.mindfultennis.data.sync.InitialSyncManager
@@ -23,15 +22,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.datetime.toLocalDateTime
 
 class HomeViewModel(
     private val authRepository: AuthRepository,
     private val sessionRepository: SessionRepository,
-    private val focusPointRepository: FocusPointRepository,
     private val opponentRepository: OpponentRepository,
     private val userPreferences: UserPreferences,
     private val initialSyncManager: InitialSyncManager,
@@ -48,6 +49,7 @@ class HomeViewModel(
     private var trendJob: Job? = null
     private var winLossJob: Job? = null
     private var aspectJob: Job? = null
+    private var calendarJob: Job? = null
     private var timerJob: Job? = null
 
     private var currentUserId: String? = null
@@ -143,11 +145,11 @@ class HomeViewModel(
     private fun loadAllData(userId: String) {
         _uiState.update { it.copy(isLoading = false) }
         observeActiveSession(userId)
-        observeFocusPoints(userId)
         observeOpponents(userId)
         refreshTrend(userId)
         refreshWinLoss(userId)
         refreshAspects(userId)
+        refreshCalendarSessions(userId)
     }
 
     private fun observeActiveSession(userId: String) {
@@ -174,18 +176,6 @@ class HomeViewModel(
                 }
                 delay(1_000L)
             }
-        }
-    }
-
-    private fun observeFocusPoints(userId: String) {
-        viewModelScope.launch {
-            focusPointRepository.observeAll(userId)
-                .catch { /* ignore */ }
-                .collectLatest { _ ->
-                    // Re-compute average scores whenever the focus points list changes
-                    val pointsWithScores = focusPointRepository.getAllWithAverageScore(userId)
-                    _uiState.update { it.copy(focusPoints = pointsWithScores) }
-                }
         }
     }
 
@@ -253,6 +243,34 @@ class HomeViewModel(
         }
     }
 
+    private fun refreshCalendarSessions(userId: String) {
+        calendarJob?.cancel()
+        calendarJob = viewModelScope.launch {
+            val duration = _uiState.value.selectedDuration
+            val fromMs = duration.startEpochMs()
+            val toMs = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
+            val tz = kotlinx.datetime.TimeZone.currentSystemDefault()
+            sessionRepository.observeSessionsInRange(userId, fromMs, toMs)
+                .map { sessions ->
+                    sessions
+                        .filter { it.endedAt != null }
+                        .groupBy { session ->
+                            kotlinx.datetime.Instant.fromEpochMilliseconds(session.startedAt)
+                                .toLocalDateTime(tz).date.toString() // ISO date key
+                        }
+                        .mapValues { (_, daySessions) ->
+                            val scored = daySessions.mapNotNull { it.overallScore }
+                            if (scored.isEmpty()) null else scored.average().toInt()
+                        }
+                }
+                .distinctUntilChanged()
+                .catch { /* ignore calendar errors */ }
+                .collectLatest { dailyScores ->
+                    _uiState.update { it.copy(calendarDailyScores = dailyScores) }
+                }
+        }
+    }
+
     private fun onDurationChanged(duration: DurationFilter) {
         _uiState.update { it.copy(selectedDuration = duration) }
         viewModelScope.launch {
@@ -262,6 +280,7 @@ class HomeViewModel(
             refreshTrend(userId)
             refreshWinLoss(userId)
             refreshAspects(userId)
+            refreshCalendarSessions(userId)
         }
     }
 

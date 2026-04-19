@@ -44,7 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ashutosh.mindfultennis.ui.home.components.AspectPerformanceCard
-import com.ashutosh.mindfultennis.ui.home.components.FocusPointsRow
+import com.ashutosh.mindfultennis.ui.home.components.CalendarHeatmap
 import com.ashutosh.mindfultennis.ui.home.components.PerformanceChart
 import com.ashutosh.mindfultennis.ui.home.components.TimeRangeSegmentedControl
 import com.ashutosh.mindfultennis.ui.home.components.WinLossCard
@@ -197,9 +197,12 @@ private fun HomeScreenContent(
                     )
                 }
 
-                // Focus Points
-                item(key = "focus_points") {
-                    FocusPointsRow(focusPoints = state.focusPoints)
+                // Calendar Heatmap
+                item(key = "calendar_heatmap") {
+                    CalendarHeatmap(
+                        dailyScores = state.calendarDailyScores,
+                        selectedDuration = state.selectedDuration,
+                    )
                 }
             }
 

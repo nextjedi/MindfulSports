@@ -3,7 +3,6 @@ package com.ashutosh.mindfultennis.ui.home
 import androidx.compose.runtime.Immutable
 import com.ashutosh.mindfultennis.domain.model.Aspect
 import com.ashutosh.mindfultennis.domain.model.DurationFilter
-import com.ashutosh.mindfultennis.domain.model.FocusPoint
 import com.ashutosh.mindfultennis.domain.model.Opponent
 import com.ashutosh.mindfultennis.domain.model.PerformanceTrend
 import com.ashutosh.mindfultennis.domain.model.RatingType
@@ -22,7 +21,7 @@ data class HomeUiState(
     val selectedDuration: DurationFilter = DurationFilter.ONE_MONTH,
     val winLossRecord: WinLossRecord? = null,
     val winLossMode: WinLossMode = WinLossMode.MATCHES,
-    val focusPoints: List<FocusPoint> = emptyList(),
+    val calendarDailyScores: Map<String, Int?> = emptyMap(),
     val selfAspectAverages: Map<Aspect, Float> = emptyMap(),
     val partnerAspectAverages: Map<Aspect, Float> = emptyMap(),
     val opponents: List<Opponent> = emptyList(),

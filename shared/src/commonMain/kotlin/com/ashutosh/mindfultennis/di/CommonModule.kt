@@ -169,7 +169,6 @@ val commonModule = module {
         HomeViewModel(
             authRepository = get(),
             sessionRepository = get(),
-            focusPointRepository = get(),
             opponentRepository = get(),
             userPreferences = get(),
             initialSyncManager = get(),
