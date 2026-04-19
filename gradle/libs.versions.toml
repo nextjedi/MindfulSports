@@ -25,6 +25,8 @@ kotlinxDatetime = "0.6.2"
 kotlinxCoroutines = "1.9.0"
 kermit = "2.0.5"
 revenuecat-kmp = "2.10.2+17.55.1"
+turbine = "1.2.0"
+mockk = "1.14.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -98,6 +100,12 @@ purchases-kmp-ui   = { module = "com.revenuecat.purchases:purchases-kmp-revenuec
 
 # Play Billing
 billing = { group = "com.android.billingclient", name = "billing", version = "7.1.1" }
+
+# Testing
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
+turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

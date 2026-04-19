@@ -26,7 +26,7 @@ android {
         applicationId = "com.ashutosh.mindfultennis"
         minSdk = 29
         targetSdk = 36
-        versionCode = 10
+        versionCode = 15
         versionName = "1.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -83,4 +83,9 @@ dependencies {
     implementation(libs.supabase.auth)
     implementation(libs.billing)
     implementation(libs.purchases.kmp.core)
+
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.mockk.android)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

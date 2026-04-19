@@ -2,6 +2,7 @@ package com.ashutosh.mindfultennis.ui.paywall
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ashutosh.mindfultennis.data.repository.PurchaseCancelledByUserException
 import com.ashutosh.mindfultennis.data.repository.SubscriptionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -55,8 +56,17 @@ class PaywallViewModel(
             _uiState.update { it.copy(isPurchasing = true, error = null) }
             val result = subscriptionRepository.purchasePackage(event.rcPackage)
             result.fold(
-                onSuccess = { _uiState.update { it.copy(isPurchasing = false, purchaseCompleted = true) } },
-                onFailure = { e -> _uiState.update { it.copy(isPurchasing = false, error = e.message) } },
+                onSuccess = {
+                    _uiState.update { it.copy(isPurchasing = false, purchaseCompleted = true) }
+                },
+                onFailure = { e ->
+                    if (e is PurchaseCancelledByUserException) {
+                        // User dismissed the sheet — stay on paywall, no error shown
+                        _uiState.update { it.copy(isPurchasing = false) }
+                    } else {
+                        _uiState.update { it.copy(isPurchasing = false, error = e.message) }
+                    }
+                },
             )
         }
     }
@@ -66,8 +76,12 @@ class PaywallViewModel(
             _uiState.update { it.copy(isPurchasing = true, error = null) }
             val result = subscriptionRepository.restorePurchases()
             result.fold(
-                onSuccess = { _uiState.update { it.copy(isPurchasing = false, purchaseCompleted = true) } },
-                onFailure = { e -> _uiState.update { it.copy(isPurchasing = false, error = e.message) } },
+                onSuccess = {
+                    _uiState.update { it.copy(isPurchasing = false, purchaseCompleted = true) }
+                },
+                onFailure = { e ->
+                    _uiState.update { it.copy(isPurchasing = false, error = e.message) }
+                },
             )
         }
     }

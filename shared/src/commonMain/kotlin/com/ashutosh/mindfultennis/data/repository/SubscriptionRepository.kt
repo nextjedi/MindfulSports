@@ -5,6 +5,9 @@ import com.revenuecat.purchases.kmp.models.Offering
 import com.revenuecat.purchases.kmp.models.Package
 import kotlinx.coroutines.flow.StateFlow
 
+/** Thrown when the user explicitly dismisses the purchase sheet. No error UI should be shown. */
+class PurchaseCancelledByUserException : Exception("Purchase cancelled by user")
+
 interface SubscriptionRepository {
 
     /** Current subscription status as a hot state flow. Always has a value. */

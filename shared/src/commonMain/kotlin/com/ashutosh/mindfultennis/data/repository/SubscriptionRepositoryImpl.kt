@@ -87,7 +87,7 @@ class SubscriptionRepositoryImpl(
                 packageToPurchase = rcPackage,
                 onError = { error: com.revenuecat.purchases.kmp.models.PurchasesError, userCancelled: Boolean ->
                     if (cont.isActive) cont.resume(
-                        if (userCancelled) Result.success(Unit)   // silent cancel
+                        if (userCancelled) Result.failure(PurchaseCancelledByUserException())
                         else Result.failure(Exception(error.message))
                     )
                 },
