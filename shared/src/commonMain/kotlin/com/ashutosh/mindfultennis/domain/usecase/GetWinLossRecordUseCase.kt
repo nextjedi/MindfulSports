@@ -35,6 +35,7 @@ class GetWinLossRecordUseCase(
             when (mode) {
                 WinLossMode.MATCHES -> computeMatchWinLoss(filtered)
                 WinLossMode.SETS -> computeSetWinLoss(filtered)
+                WinLossMode.GAMES -> computeGameWinLoss(filtered)
             }
         }
     }
@@ -137,6 +138,35 @@ class GetWinLossRecordUseCase(
     companion object {
         /** Maximum number of recent game results shown in the domino strip. */
         const val RECENT_GAMES_COUNT = 5
+    }
+
+    /**
+     * Counts individual games (points within sets) across all sessions.
+     * Each set contributes its userScore as wins and opponentScore as losses.
+     */
+    private suspend fun computeGameWinLoss(sessions: List<Session>): WinLossRecord {
+        if (sessions.isEmpty()) return WinLossRecord(wins = 0, losses = 0)
+
+        val sessionIds = sessions.map { it.id }
+        val allSetScores = sessionRepository.getSetScoresForSessions(sessionIds)
+            .getOrDefault(emptyList())
+
+        if (allSetScores.isEmpty()) return WinLossRecord(wins = 0, losses = 0)
+
+        var wins = 0
+        var losses = 0
+
+        for (set in allSetScores) {
+            wins += set.userScore
+            losses += set.opponentScore
+        }
+
+        return WinLossRecord(
+            wins = wins,
+            losses = losses,
+            draws = 0,
+            recentResults = emptyList(),
+        )
     }
 
     private fun filterByOpponents(
