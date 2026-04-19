@@ -82,4 +82,5 @@ dependencies {
     implementation(platform(libs.supabase.bom))
     implementation(libs.supabase.auth)
     implementation(libs.billing)
+    implementation(libs.purchases.kmp.core)
 }
