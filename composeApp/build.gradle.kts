@@ -26,8 +26,8 @@ android {
         applicationId = "com.ashutosh.mindfultennis"
         minSdk = 29
         targetSdk = 36
-        versionCode = 16
-        versionName = "1.6"
+        versionCode = 17
+        versionName = "2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
