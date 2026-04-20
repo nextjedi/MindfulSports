@@ -6,4 +6,5 @@ package com.ashutosh.mindfultennis.domain.model
 enum class WinLossMode(val label: String) {
     MATCHES("Matches"),
     SETS("Sets"),
+    GAMES("Games"),
 }
