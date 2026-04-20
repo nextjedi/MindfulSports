@@ -77,6 +77,9 @@ kotlin {
 
             // Logging
             implementation(libs.kermit)
+
+            // Crash reporting + error tracking (KMP — delegates to platform SDK at runtime)
+            implementation(libs.sentry.kmp)
         }
 
         androidMain.dependencies {
@@ -84,6 +87,8 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.work.runtime.ktx)
             implementation(libs.androidx.activity.compose)
+            // Product analytics — Android SDK only; iOS uses StubAnalytics until SPM is wired
+            implementation(libs.posthog.android)
         }
 
         iosMain.dependencies {

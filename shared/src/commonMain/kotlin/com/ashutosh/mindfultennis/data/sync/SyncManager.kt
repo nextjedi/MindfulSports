@@ -61,41 +61,52 @@ class SyncManager(
             Logger.d(TAG) { "Sync already in progress, skipping" }
             return@withContext Result.success(Unit)
         }
+        val startMs = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
         try {
             runCatching {
-            Logger.d(TAG) { "Starting sync for user $userId" }
+                Logger.i(TAG) { "Sync started for user $userId" }
 
-            // Ensure user record exists in Supabase before pushing FK-dependent data
-            ensureUserExists(userId)
+                // Ensure user record exists in Supabase before pushing FK-dependent data
+                ensureUserExists(userId)
 
-            // Push entities with no FK dependencies first
-            pushPendingFocusPoints()
-            pushPendingOpponents()
-            pushPendingPartners()
+                // Push entities with no FK dependencies first
+                pushPendingFocusPoints()
+                pushPendingOpponents()
+                pushPendingPartners()
 
-            // Sessions depend on opponents + partners via FK
-            pushPendingSessions()
+                // Sessions depend on opponents + partners via FK
+                pushPendingSessions()
 
-            // Ratings and scores depend on sessions (and set_scores on opponents) via FK
-            pushPendingSelfRatings()
-            pushPendingPartnerRatings()
-            pushPendingSetScores()
+                // Ratings and scores depend on sessions (and set_scores on opponents) via FK
+                pushPendingSelfRatings()
+                pushPendingPartnerRatings()
+                pushPendingSetScores()
 
-            // Push pending deletes (after upserts, before pulls)
-            pushPendingDeleteSessions()
-            pushPendingDeleteFocusPoints()
-            pushPendingDeleteOpponents()
-            pushPendingDeletePartners()
+                // Push pending deletes (after upserts, before pulls)
+                pushPendingDeleteSessions()
+                pushPendingDeleteFocusPoints()
+                pushPendingDeleteOpponents()
+                pushPendingDeletePartners()
 
-            val lastSync = userPreferences.lastSyncTimestamp.first()
-            pullRemoteSessions(userId, lastSync)
-            pullRemoteFocusPoints(userId)
-            pullRemoteOpponents(userId)
-            pullRemotePartners(userId)
+                val lastSync = userPreferences.lastSyncTimestamp.first()
+                pullRemoteSessions(userId, lastSync)
+                pullRemoteFocusPoints(userId)
+                pullRemoteOpponents(userId)
+                pullRemotePartners(userId)
 
-            userPreferences.setLastSyncTimestamp(kotlinx.datetime.Clock.System.now().toEpochMilliseconds())
-            Logger.d(TAG) { "Sync completed for user $userId" }
-            Unit
+                val nowMs = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
+                userPreferences.setLastSyncTimestamp(nowMs)
+
+                val durationMs = nowMs - startMs
+                Logger.i(TAG) { "Sync completed in ${durationMs}ms for user $userId" }
+                Unit
+            }.also { result ->
+                if (result.isFailure) {
+                    val durationMs = kotlinx.datetime.Clock.System.now().toEpochMilliseconds() - startMs
+                    Logger.e(TAG, result.exceptionOrNull()) {
+                        "Sync failed after ${durationMs}ms for user $userId"
+                    }
+                }
             }
         } finally {
             syncMutex.unlock()
