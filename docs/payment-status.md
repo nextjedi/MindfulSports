@@ -8,7 +8,7 @@ Last updated: 2026-04-19
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| 1 | Store & RevenueCat Setup | ⏳ In Progress |
+| 1 | Store & RevenueCat Setup | ✅ Done |
 | 2 | Supabase Webhook | ✅ Done |
 | 3 | SDK Integration (Android/iOS) | ✅ Done |
 | 4 | Paywall UI | ✅ Done |
@@ -18,16 +18,16 @@ Last updated: 2026-04-19
 
 ## Phase 1 — Store & RevenueCat Setup
 
-**Status: ⏳ In Progress**
+**Status: ✅ Done**
 
-- [ ] Create RevenueCat account + organization
-- [ ] Create RevenueCat project for MindfulTennis → obtain API keys (Android + iOS)
-- [ ] App Store Connect: subscription group + 3 auto-renewing subscriptions + lifetime non-consumable + 3-day intro trial
-- [ ] Google Play Console: subscription + 3 base plans with 3-day trial + lifetime in-app product
-- [ ] Link both store apps to RevenueCat project
-- [ ] Create entitlements in RevenueCat: `premium_monthly`, `premium_quarterly`, `premium_annual`, `premium_lifetime`
-- [ ] Create an Offering with all 4 packages
-- [ ] Register webhook URL in RevenueCat → Integrations → Webhooks
+- [x] Create RevenueCat account + organization
+- [x] Create RevenueCat project for MindfulTennis → obtain API keys (Android + iOS)
+- [x] App Store Connect: subscription group + 3 auto-renewing subscriptions + lifetime non-consumable + 3-day intro trial
+- [x] Google Play Console: subscription + 3 base plans with 3-day trial + lifetime in-app product
+- [x] Link both store apps to RevenueCat project
+- [x] Create entitlements in RevenueCat: `premium_monthly`, `premium_quarterly`, `premium_annual`, `premium_lifetime`
+- [x] Create an Offering with all 4 packages
+- [x] Register webhook URL in RevenueCat → Integrations → Webhooks
 
 **Product IDs (Tennis):**
 

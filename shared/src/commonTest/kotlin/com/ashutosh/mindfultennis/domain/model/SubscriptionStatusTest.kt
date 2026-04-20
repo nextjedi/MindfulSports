@@ -24,7 +24,7 @@ class SubscriptionStatusTest {
 
     @Test
     fun `Active has premium access`() {
-        assertTrue(SubscriptionStatus.Active.hasPremiumAccess)
+        assertTrue(SubscriptionStatus.Active().hasPremiumAccess)
     }
 
     @Test
@@ -36,6 +36,7 @@ class SubscriptionStatusTest {
     @Test
     fun `Cancelled still has premium access`() {
         // Cancelled = user cancelled but billing period hasn't ended yet → still has access
-        assertTrue(SubscriptionStatus.Cancelled.hasPremiumAccess)
+        val cancelled = SubscriptionStatus.Cancelled(accessUntil = Instant.fromEpochSeconds(32503680000L))
+        assertTrue(cancelled.hasPremiumAccess)
     }
 }

@@ -25,6 +25,10 @@ class UserPreferences(
         private val KEY_ASPECT_DURATION_FILTER = stringPreferencesKey("aspect_duration_filter")
         private val KEY_ASPECT_RATING_TYPE = stringPreferencesKey("aspect_rating_type")
         private val KEY_HAS_COMPLETED_INITIAL_SYNC = booleanPreferencesKey("has_completed_initial_sync")
+        // Subscription offline cache
+        private val KEY_TRIAL_STARTED_AT_MS = longPreferencesKey("trial_started_at_ms")
+        private val KEY_SUBSCRIPTION_STATUS = stringPreferencesKey("subscription_status")
+        private val KEY_SUBSCRIPTION_VERIFIED_AT = longPreferencesKey("subscription_verified_at")
     }
 
     // ── Last Sync Timestamp ───────────────────────────────────────────
@@ -116,6 +120,31 @@ class UserPreferences(
     suspend fun setHasCompletedInitialSync(completed: Boolean) {
         dataStore.edit { prefs ->
             prefs[KEY_HAS_COMPLETED_INITIAL_SYNC] = completed
+        }
+    }
+
+    // ── Subscription Offline Cache ────────────────────────────────────
+
+    val trialStartedAtMs: Flow<Long?> = dataStore.data.map { prefs ->
+        prefs[KEY_TRIAL_STARTED_AT_MS]
+    }
+
+    suspend fun setTrialStartedAt(ms: Long) {
+        dataStore.edit { prefs -> prefs[KEY_TRIAL_STARTED_AT_MS] = ms }
+    }
+
+    val cachedSubscriptionStatus: Flow<String?> = dataStore.data.map { prefs ->
+        prefs[KEY_SUBSCRIPTION_STATUS]
+    }
+
+    val subscriptionStatusVerifiedAt: Flow<Long> = dataStore.data.map { prefs ->
+        prefs[KEY_SUBSCRIPTION_VERIFIED_AT] ?: 0L
+    }
+
+    suspend fun setSubscriptionStatus(serialized: String, verifiedAtMs: Long) {
+        dataStore.edit { prefs ->
+            prefs[KEY_SUBSCRIPTION_STATUS] = serialized
+            prefs[KEY_SUBSCRIPTION_VERIFIED_AT] = verifiedAtMs
         }
     }
 

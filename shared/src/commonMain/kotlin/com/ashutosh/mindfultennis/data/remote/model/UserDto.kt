@@ -14,4 +14,5 @@ data class UserDto(
     @SerialName("photo_url") val photoUrl: String? = null,
     @SerialName("created_at") val createdAt: Long,
     @SerialName("time_zone") val timeZone: String,
+    @SerialName("trial_started_at") val trialStartedAt: Long? = null,
 )

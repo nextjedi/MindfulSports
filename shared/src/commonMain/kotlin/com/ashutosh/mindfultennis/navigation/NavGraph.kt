@@ -34,21 +34,41 @@ import org.koin.core.parameter.parametersOf
 fun NavGraph(
     navController: NavHostController,
     isAuthenticated: Boolean,
+    hasPremiumAccess: Boolean,
+    isSubscriptionLoading: Boolean,
     pendingCancelSessionId: String? = null,
     modifier: Modifier = Modifier,
 ) {
-    val startDestination = if (isAuthenticated) Route.Home.route else Route.Login.route
+    val startDestination = when {
+        !isAuthenticated -> Route.Login.route
+        isSubscriptionLoading || hasPremiumAccess -> Route.Home.route
+        else -> Route.PaywallGate.route
+    }
 
-    // Auth guard: redirect to login if unauthenticated, or to home if authenticated
-    LaunchedEffect(isAuthenticated) {
-        val currentRoute = navController.currentDestination?.route
-        if (!isAuthenticated && currentRoute != Route.Login.route) {
-            navController.navigate(Route.Login.route) {
-                popUpTo(0) { inclusive = true }
+    LaunchedEffect(isAuthenticated, hasPremiumAccess, isSubscriptionLoading) {
+        if (isSubscriptionLoading) return@LaunchedEffect  // Wait for status to resolve
+
+        val current = navController.currentDestination?.route
+        when {
+            // Not logged in → always go to Login
+            !isAuthenticated && current != Route.Login.route -> {
+                navController.navigate(Route.Login.route) {
+                    popUpTo(0) { inclusive = true }
+                }
             }
-        } else if (isAuthenticated && currentRoute == Route.Login.route) {
-            navController.navigate(Route.Home.route) {
-                popUpTo(Route.Login.route) { inclusive = true }
+            // Logged in but no access → mandatory paywall gate
+            isAuthenticated && !hasPremiumAccess &&
+                current != Route.PaywallGate.route && current != Route.Login.route -> {
+                navController.navigate(Route.PaywallGate.route) {
+                    popUpTo(0) { inclusive = true }
+                }
+            }
+            // Got access (subscribed / trial started) → go to Home
+            isAuthenticated && hasPremiumAccess &&
+                (current == Route.Login.route || current == Route.PaywallGate.route) -> {
+                navController.navigate(Route.Home.route) {
+                    popUpTo(0) { inclusive = true }
+                }
             }
         }
     }
@@ -63,37 +83,36 @@ fun NavGraph(
             LoginScreen(
                 viewModel = viewModel,
                 onSignedIn = {
-                    navController.navigate(Route.Home.route) {
-                        popUpTo(Route.Login.route) { inclusive = true }
-                    }
+                    // NavGraph's LaunchedEffect handles routing after login
+                    // based on hasPremiumAccess, so no explicit navigate here.
                 },
+            )
+        }
+
+        // ── Mandatory paywall gate (no back button) ──────────────────────
+        composable(Route.PaywallGate.route) {
+            val viewModel: PaywallViewModel = koinViewModel()
+            PaywallScreen(
+                viewModel = viewModel,
+                onNavigateBack = null,  // Non-dismissable
             )
         }
 
         composable(Route.Home.route) {
             val viewModel: HomeViewModel = koinViewModel()
-
-            // Handle cancel session from notification action
             if (pendingCancelSessionId != null) {
                 LaunchedEffect(pendingCancelSessionId) {
                     viewModel.onEvent(HomeUiEvent.CancelSessionClicked)
                 }
             }
-
             HomeScreen(
                 viewModel = viewModel,
-                onStartSessionClicked = {
-                    navController.navigate(Route.StartSession.route)
-                },
+                onStartSessionClicked = { navController.navigate(Route.StartSession.route) },
                 onEndSessionClicked = { sessionId ->
                     navController.navigate(Route.EndSession(sessionId).route)
                 },
-                onShowSessionsClicked = {
-                    navController.navigate(Route.SessionsList.route)
-                },
-                onNavigateToSettings = {
-                    navController.navigate(Route.Settings.route)
-                },
+                onShowSessionsClicked = { navController.navigate(Route.SessionsList.route) },
+                onNavigateToSettings = { navController.navigate(Route.Settings.route) },
             )
         }
 
@@ -101,9 +120,7 @@ fun NavGraph(
             val viewModel: SettingsViewModel = koinViewModel()
             SettingsScreen(
                 viewModel = viewModel,
-                onNavigateBack = {
-                    navController.popBackStack()
-                },
+                onNavigateBack = { navController.popBackStack() },
                 onLoggedOut = {
                     navController.navigate(Route.Login.route) {
                         popUpTo(0) { inclusive = true }
@@ -119,33 +136,24 @@ fun NavGraph(
             val viewModel: StartSessionViewModel = koinViewModel()
             StartSessionScreen(
                 viewModel = viewModel,
-                onSessionStarted = {
-                    navController.popBackStack(Route.Home.route, inclusive = false)
-                },
-                onNavigateBack = {
-                    navController.popBackStack()
-                },
+                onSessionStarted = { navController.popBackStack(Route.Home.route, inclusive = false) },
+                onNavigateBack = { navController.popBackStack() },
             )
         }
 
         composable(
             route = Route.EndSession.ROUTE_PATTERN,
-            arguments = listOf(
-                navArgument(Route.EndSession.ARG_SESSION_ID) {
-                    type = NavType.StringType
-                }
-            ),
+            arguments = listOf(navArgument(Route.EndSession.ARG_SESSION_ID) {
+                type = NavType.StringType
+            }),
         ) { backStackEntry ->
-            val sessionId = backStackEntry.arguments?.getString(Route.EndSession.ARG_SESSION_ID) ?: return@composable
+            val sessionId = backStackEntry.arguments
+                ?.getString(Route.EndSession.ARG_SESSION_ID) ?: return@composable
             val viewModel: EndSessionViewModel = koinViewModel { parametersOf(sessionId) }
             EndSessionScreen(
                 viewModel = viewModel,
-                onSessionSubmitted = {
-                    navController.popBackStack(Route.Home.route, inclusive = false)
-                },
-                onNavigateBack = {
-                    navController.popBackStack()
-                },
+                onSessionSubmitted = { navController.popBackStack(Route.Home.route, inclusive = false) },
+                onNavigateBack = { navController.popBackStack() },
             )
         }
 
@@ -156,12 +164,11 @@ fun NavGraph(
                 onSessionClicked = { sessionId ->
                     navController.navigate(Route.SessionDetail(sessionId).route)
                 },
-                onNavigateBack = {
-                    navController.popBackStack()
-                },
+                onNavigateBack = { navController.popBackStack() },
             )
         }
 
+        // Dismissable paywall — reached from Settings → Subscription Management
         composable(Route.Paywall.route) {
             val viewModel: PaywallViewModel = koinViewModel()
             PaywallScreen(
@@ -175,27 +182,22 @@ fun NavGraph(
             SubscriptionManagementScreen(
                 viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToPaywall = {
-                    navController.navigate(Route.Paywall.route)
-                },
+                onNavigateToPaywall = { navController.navigate(Route.Paywall.route) },
             )
         }
 
         composable(
             route = Route.SessionDetail.ROUTE_PATTERN,
-            arguments = listOf(
-                navArgument(Route.SessionDetail.ARG_SESSION_ID) {
-                    type = NavType.StringType
-                }
-            ),
+            arguments = listOf(navArgument(Route.SessionDetail.ARG_SESSION_ID) {
+                type = NavType.StringType
+            }),
         ) { backStackEntry ->
-            val sessionId = backStackEntry.arguments?.getString(Route.SessionDetail.ARG_SESSION_ID) ?: return@composable
+            val sessionId = backStackEntry.arguments
+                ?.getString(Route.SessionDetail.ARG_SESSION_ID) ?: return@composable
             val viewModel: SessionDetailViewModel = koinViewModel { parametersOf(sessionId) }
             SessionDetailScreen(
                 viewModel = viewModel,
-                onNavigateBack = {
-                    navController.popBackStack()
-                },
+                onNavigateBack = { navController.popBackStack() },
             )
         }
     }

@@ -55,10 +55,11 @@ class SubscriptionManagementViewModelTest {
         val repo = FakeSubscriptionRepository()
         val vm = buildViewModel(repo)
 
-        repo.setStatus(SubscriptionStatus.Active)
+        val active = SubscriptionStatus.Active()
+        repo.setStatus(active)
         advanceUntilIdle()
 
-        assertEquals(SubscriptionStatus.Active, vm.uiState.value.subscriptionStatus)
+        assertEquals(active, vm.uiState.value.subscriptionStatus)
     }
 
     @Test

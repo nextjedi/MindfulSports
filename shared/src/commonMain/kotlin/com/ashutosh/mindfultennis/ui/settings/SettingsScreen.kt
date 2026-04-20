@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ashutosh.mindfultennis.domain.model.SubscriptionStatus
 import com.ashutosh.mindfultennis.ui.theme.Spacing
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -335,11 +336,55 @@ private fun DeleteAccountDialog(
 }
 
 private fun subscriptionStatusLabel(status: SubscriptionStatus): String = when (status) {
-    is SubscriptionStatus.Active -> "Premium — Active"
-    is SubscriptionStatus.Trial -> "Premium — Free Trial"
-    is SubscriptionStatus.Cancelled -> "Premium — Cancelled"
-    is SubscriptionStatus.Expired -> "Expired — Upgrade"
-    is SubscriptionStatus.None -> "Free — Upgrade to Premium"
+    is SubscriptionStatus.Active -> {
+        val planLabel = when (status.plan) {
+            "weekly" -> "Weekly Plan"
+            "monthly" -> "Monthly Plan"
+            "quarterly" -> "Quarterly Plan"
+            "annual" -> "Annual Plan"
+            "lifetime" -> "Lifetime Plan"
+            else -> "Premium"
+        }
+        val renewLabel = if (status.plan == "lifetime" || status.renewsAt == null) {
+            ""
+        } else {
+            " — renews ${formatShortDate(status.renewsAt)}"
+        }
+        "$planLabel$renewLabel"
+    }
+    is SubscriptionStatus.Trial -> {
+        val daysLeft = daysUntil(status.endsAt)
+        when {
+            daysLeft <= 0 -> "Free Trial — expires today"
+            daysLeft == 1L -> "Free Trial — 1 day left"
+            else -> "Free Trial — $daysLeft days left"
+        }
+    }
+    is SubscriptionStatus.Cancelled ->
+        "Cancelled — access until ${formatShortDate(status.accessUntil)}"
+    is SubscriptionStatus.GracePeriod ->
+        "Payment Issue — update payment method"
+    is SubscriptionStatus.Expired ->
+        "Expired — Renew to Continue"
+    is SubscriptionStatus.None,
+    is SubscriptionStatus.Loading ->
+        "Free — Start 3-Day Trial"
+}
+
+private fun daysUntil(instant: Instant): Long {
+    val nowMs = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
+    val diffMs = instant.toEpochMilliseconds() - nowMs
+    return diffMs / (24 * 60 * 60 * 1000L)
+}
+
+private fun formatShortDate(instant: Instant): String {
+    return try {
+        val local = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+        val month = local.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }
+        "$month ${local.dayOfMonth}"
+    } catch (_: Exception) {
+        "soon"
+    }
 }
 
 private fun formatSyncTime(epochMs: Long): String {

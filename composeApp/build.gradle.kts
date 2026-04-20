@@ -26,8 +26,8 @@ android {
         applicationId = "com.ashutosh.mindfultennis"
         minSdk = 29
         targetSdk = 36
-        versionCode = 15
-        versionName = "1.5"
+        versionCode = 16
+        versionName = "1.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -85,7 +85,9 @@ dependencies {
     implementation(libs.purchases.kmp.core)
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.7.7")
+    androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.mockk.android)
+    androidTestImplementation(kotlin("test"))
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

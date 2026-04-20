@@ -16,6 +16,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.navigation.compose.rememberNavController
 import com.ashutosh.mindfultennis.data.repository.AuthRepository
 import com.ashutosh.mindfultennis.data.repository.AuthState
+import com.ashutosh.mindfultennis.data.repository.SubscriptionRepository
+import com.ashutosh.mindfultennis.domain.model.SubscriptionStatus
+import com.ashutosh.mindfultennis.domain.model.hasPremiumAccess
 import com.ashutosh.mindfultennis.navigation.NavGraph
 import com.ashutosh.mindfultennis.ui.theme.MindfulTennisTheme
 import kotlinx.coroutines.flow.catch
@@ -28,17 +31,17 @@ fun App() {
     MindfulTennisTheme {
         val navController = rememberNavController()
         val authRepository = koinInject<AuthRepository>()
+        val subscriptionRepository = koinInject<SubscriptionRepository>()
         val snackbarHostState = remember { SnackbarHostState() }
 
-        // Timeout guards against the app being stuck on Loading forever (e.g. no network
-        // on cold start). After 10 s with no state change we fall through to Unauthenticated.
         val authState by authRepository.authState
             .timeout(10.seconds)
             .catch { emit(AuthState.Unauthenticated) }
             .collectAsState(initial = AuthState.Loading)
 
-        // Tell the user why they're being sent to the login screen instead of
-        // silently dropping them there with no context.
+        val subscriptionStatus by subscriptionRepository.subscriptionStatus
+            .collectAsState()
+
         LaunchedEffect(authState) {
             if (authState is AuthState.SessionExpired) {
                 snackbarHostState.currentSnackbarData?.dismiss()
@@ -49,19 +52,20 @@ fun App() {
             }
         }
 
-        // SessionExpired → treat as unauthenticated so NavGraph redirects to Login.
-        // The snackbar above fires on the same frame and stays visible on the Login screen.
         val isAuthenticated = authState is AuthState.Authenticated
+        val hasPremiumAccess = subscriptionStatus.hasPremiumAccess
+        val isSubscriptionLoading = subscriptionStatus is SubscriptionStatus.Loading
 
         Box(modifier = Modifier.fillMaxSize()) {
             Surface(modifier = Modifier.fillMaxSize()) {
                 NavGraph(
                     navController = navController,
                     isAuthenticated = isAuthenticated,
+                    hasPremiumAccess = hasPremiumAccess,
+                    isSubscriptionLoading = isSubscriptionLoading,
                     pendingCancelSessionId = null,
                 )
             }
-            // Global snackbar overlay — sits above NavGraph so it's visible on any screen
             SnackbarHost(
                 hostState = snackbarHostState,
                 modifier = Modifier.align(Alignment.BottomCenter),

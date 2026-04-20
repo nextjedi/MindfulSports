@@ -52,14 +52,15 @@ import com.revenuecat.purchases.kmp.models.PackageType
 @Composable
 fun PaywallScreen(
     viewModel: PaywallViewModel,
-    onNavigateBack: () -> Unit,
+    /** Null when the paywall is a mandatory gate (no back button shown). */
+    onNavigateBack: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(uiState.purchaseCompleted) {
-        if (uiState.purchaseCompleted) onNavigateBack()
+        if (uiState.purchaseCompleted) onNavigateBack?.invoke()
     }
 
     LaunchedEffect(uiState.error) {
@@ -83,7 +84,7 @@ fun PaywallScreen(
 @Composable
 private fun PaywallScreenContent(
     state: PaywallUiState,
-    onNavigateBack: () -> Unit,
+    onNavigateBack: (() -> Unit)?,
     onPurchasePackage: (Package) -> Unit,
     onRestorePurchases: () -> Unit,
     snackbarHostState: SnackbarHostState,
@@ -96,11 +97,13 @@ private fun PaywallScreenContent(
             TopAppBar(
                 title = { Text("Upgrade to Premium") },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack, enabled = !state.isPurchasing) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                        )
+                    if (onNavigateBack != null) {
+                        IconButton(onClick = onNavigateBack, enabled = !state.isPurchasing) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                            )
+                        }
                     }
                 },
             )

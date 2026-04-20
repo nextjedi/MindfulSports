@@ -3,7 +3,9 @@ package com.ashutosh.mindfultennis.di
 import androidx.room.RoomDatabase
 import com.ashutosh.mindfultennis.data.local.datastore.UserPreferences
 import com.ashutosh.mindfultennis.data.local.db.MindfulDatabase
+import com.ashutosh.mindfultennis.data.notification.NotificationScheduler
 import com.ashutosh.mindfultennis.data.remote.SupabaseSessionDataSource
+import com.ashutosh.mindfultennis.data.remote.SupabaseSubscriptionDataSource
 import com.ashutosh.mindfultennis.data.remote.SupabaseUserDataSource
 import com.ashutosh.mindfultennis.data.repository.AuthRepository
 import com.ashutosh.mindfultennis.data.repository.AuthRepositoryImpl
@@ -91,12 +93,20 @@ val commonModule = module {
 
     single { SupabaseSessionDataSource(get()) }
     single { SupabaseUserDataSource(get()) }
+    single { SupabaseSubscriptionDataSource(get()) }
 
     // ── Repositories ───────────────────────────────────────────────────
 
     single<AuthRepository> { AuthRepositoryImpl(get()) }
 
-    single<SubscriptionRepository> { SubscriptionRepositoryImpl(get()) }
+    single<SubscriptionRepository> {
+        SubscriptionRepositoryImpl(
+            authRepository = get(),
+            supabaseSubscriptionDataSource = get(),
+            userPreferences = get(),
+            notificationScheduler = get(),
+        )
+    }
 
     single<SessionRepository> {
         SessionRepositoryImpl(

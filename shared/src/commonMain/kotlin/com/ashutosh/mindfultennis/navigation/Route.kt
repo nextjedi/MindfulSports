@@ -26,5 +26,7 @@ sealed class Route(val route: String) {
     }
 
     data object Paywall : Route("paywall")
+    /** Mandatory paywall shown when the user has no premium access. Non-dismissable. */
+    data object PaywallGate : Route("paywall_gate")
     data object SubscriptionManagement : Route("subscription_management")
 }

@@ -162,10 +162,16 @@ private fun StatusSection(
         is SubscriptionStatus.Cancelled -> Triple(
             Icons.Default.CheckCircle,
             "Premium (Cancelled)",
-            "Access continues until the end of the billing period.",
+            "Access until ${formatDate(status.accessUntil)}",
+        )
+        is SubscriptionStatus.GracePeriod -> Triple(
+            Icons.Default.CheckCircle,
+            "Premium (Billing Issue)",
+            "Update your payment method to keep access.",
         )
         is SubscriptionStatus.Expired,
-        is SubscriptionStatus.None -> Triple(
+        is SubscriptionStatus.None,
+        is SubscriptionStatus.Loading -> Triple(
             Icons.Default.Lock,
             "No Active Subscription",
             "Upgrade to unlock all premium features.",
@@ -199,9 +205,12 @@ private fun StatusSection(
     }
 }
 
-private fun formatTrialEnd(status: SubscriptionStatus.Trial): String {
+private fun formatTrialEnd(status: SubscriptionStatus.Trial): String =
+    formatDate(status.endsAt)
+
+private fun formatDate(instant: kotlinx.datetime.Instant): String {
     return try {
-        val local = status.endsAt.toLocalDateTime(TimeZone.currentSystemDefault())
+        val local = instant.toLocalDateTime(TimeZone.currentSystemDefault())
         "${local.month.name.lowercase().replaceFirstChar { it.uppercase() }} ${local.dayOfMonth}, ${local.year}"
     } catch (_: Exception) {
         "soon"
