@@ -9,11 +9,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -32,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ashutosh.mindfultennis.domain.model.SubscriptionStatus
 import com.ashutosh.mindfultennis.domain.model.hasPremiumAccess
@@ -148,65 +153,96 @@ private fun StatusSection(
     status: SubscriptionStatus,
     modifier: Modifier = Modifier,
 ) {
-    val (icon, label, detail) = when (status) {
-        is SubscriptionStatus.Active -> Triple(
-            Icons.Default.CheckCircle,
-            "Premium Active",
-            null,
-        )
-        is SubscriptionStatus.Trial -> Triple(
-            Icons.Default.CheckCircle,
-            "Free Trial",
-            "Trial ends ${formatTrialEnd(status)}",
-        )
-        is SubscriptionStatus.Cancelled -> Triple(
-            Icons.Default.CheckCircle,
-            "Premium (Cancelled)",
-            "Access until ${formatDate(status.accessUntil)}",
-        )
-        is SubscriptionStatus.GracePeriod -> Triple(
-            Icons.Default.CheckCircle,
-            "Premium (Billing Issue)",
-            "Update your payment method to keep access.",
-        )
-        is SubscriptionStatus.Expired,
-        is SubscriptionStatus.None,
-        is SubscriptionStatus.Loading -> Triple(
-            Icons.Default.Lock,
-            "No Active Subscription",
-            "Upgrade to unlock all premium features.",
-        )
+    val containerColor = when (status) {
+        is SubscriptionStatus.Active,
+        is SubscriptionStatus.Trial,
+        is SubscriptionStatus.Cancelled -> MaterialTheme.colorScheme.primaryContainer
+        is SubscriptionStatus.GracePeriod -> MaterialTheme.colorScheme.errorContainer
+        else -> MaterialTheme.colorScheme.surfaceVariant
+    }
+    val onContainerColor = when (status) {
+        is SubscriptionStatus.GracePeriod -> MaterialTheme.colorScheme.onErrorContainer
+        is SubscriptionStatus.Active,
+        is SubscriptionStatus.Trial,
+        is SubscriptionStatus.Cancelled -> MaterialTheme.colorScheme.onPrimaryContainer
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier,
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = if (status.hasPremiumAccess) MaterialTheme.colorScheme.primary
-                   else MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.width(Spacing.sm))
-        Column {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.titleMedium,
+        Row(
+            modifier = Modifier.padding(Spacing.md),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            val icon = when (status) {
+                is SubscriptionStatus.GracePeriod -> Icons.Default.Warning
+                is SubscriptionStatus.Active,
+                is SubscriptionStatus.Trial,
+                is SubscriptionStatus.Cancelled -> Icons.Default.CheckCircle
+                else -> Icons.Default.Lock
+            }
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = onContainerColor,
+                modifier = Modifier.size(32.dp),
             )
-            if (detail != null) {
+            Spacer(Modifier.width(Spacing.md))
+            Column {
                 Text(
-                    text = detail,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    text = statusTitle(status),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = onContainerColor,
                 )
+                val detail = statusDetail(status)
+                if (detail != null) {
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = detail,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = onContainerColor.copy(alpha = 0.75f),
+                    )
+                }
             }
         }
     }
 }
 
-private fun formatTrialEnd(status: SubscriptionStatus.Trial): String =
-    formatDate(status.endsAt)
+private fun statusTitle(status: SubscriptionStatus): String = when (status) {
+    is SubscriptionStatus.Active -> when (status.plan) {
+        "weekly" -> "Weekly Premium"
+        "monthly" -> "Monthly Premium"
+        "quarterly" -> "Quarterly Premium"
+        "annual" -> "Annual Premium"
+        "lifetime" -> "Lifetime Premium"
+        else -> "Premium Active"
+    }
+    is SubscriptionStatus.Trial -> "Free Trial Active"
+    is SubscriptionStatus.Cancelled -> "Premium — Cancelled"
+    is SubscriptionStatus.GracePeriod -> "Billing Issue"
+    is SubscriptionStatus.Expired -> "Subscription Expired"
+    is SubscriptionStatus.None,
+    is SubscriptionStatus.Loading -> "No Active Subscription"
+}
+
+private fun statusDetail(status: SubscriptionStatus): String? = when (status) {
+    is SubscriptionStatus.Active -> when {
+        status.plan == "lifetime" -> "Lifetime access — never expires"
+        status.renewsAt != null -> "Renews on ${formatDate(status.renewsAt)}"
+        else -> null
+    }
+    is SubscriptionStatus.Trial -> "Trial ends ${formatDate(status.endsAt)}"
+    is SubscriptionStatus.Cancelled -> "Access until ${formatDate(status.accessUntil)}"
+    is SubscriptionStatus.GracePeriod -> "Update your payment method to keep access."
+    is SubscriptionStatus.Expired -> "Subscribe again to continue tracking your game."
+    is SubscriptionStatus.None,
+    is SubscriptionStatus.Loading -> "Start a free 3-day trial — no card required."
+}
 
 private fun formatDate(instant: kotlinx.datetime.Instant): String {
     return try {

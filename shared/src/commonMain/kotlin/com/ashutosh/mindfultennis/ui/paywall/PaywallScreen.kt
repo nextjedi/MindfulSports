@@ -1,5 +1,8 @@
 package com.ashutosh.mindfultennis.ui.paywall
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -29,6 +33,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -48,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import com.ashutosh.mindfultennis.ui.theme.Spacing
 import com.revenuecat.purchases.kmp.models.Package
 import com.revenuecat.purchases.kmp.models.PackageType
+import kotlinx.coroutines.delay
 
 @Composable
 fun PaywallScreen(
@@ -59,8 +65,15 @@ fun PaywallScreen(
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    // Show welcome screen for 2.5 s, then navigate.
+    // For the mandatory gate onNavigateBack is null — NavGraph routes to Home
+    // once hasPremiumAccess resolves. The delay also gives RC time to push the
+    // status update before the user lands on any downstream screen.
     LaunchedEffect(uiState.purchaseCompleted) {
-        if (uiState.purchaseCompleted) onNavigateBack?.invoke()
+        if (uiState.purchaseCompleted) {
+            delay(2_500)
+            onNavigateBack?.invoke()
+        }
     }
 
     LaunchedEffect(uiState.error) {
@@ -114,91 +127,149 @@ private fun PaywallScreenContent(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            when {
-                state.isLoading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                }
-                state.offering == null -> {
-                    ErrorState(modifier = Modifier.align(Alignment.Center))
-                }
-                else -> {
-                    var selectedPackageId by rememberSaveable {
-                        mutableStateOf(state.offering.availablePackages.firstOrNull()?.identifier)
+            // Normal paywall content (hidden during welcome)
+            AnimatedVisibility(visible = !state.purchaseCompleted, exit = fadeOut()) {
+                when {
+                    state.isLoading -> {
+                        Box(Modifier.fillMaxSize()) {
+                            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                        }
                     }
+                    state.offering == null -> {
+                        ErrorState(modifier = Modifier.align(Alignment.Center))
+                    }
+                    else -> {
+                        var selectedPackageId by rememberSaveable {
+                            mutableStateOf(state.offering.availablePackages.firstOrNull()?.identifier)
+                        }
 
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .verticalScroll(rememberScrollState())
-                            .padding(horizontal = Spacing.md, vertical = Spacing.lg),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Star,
-                            contentDescription = null,
-                            modifier = Modifier.size(48.dp),
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
-                        Spacer(Modifier.height(Spacing.sm))
-                        Text(
-                            text = "MindfulTennis Premium",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                        )
-                        Spacer(Modifier.height(Spacing.xs))
-                        Text(
-                            text = "Unlock full access to all features",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center,
-                        )
-                        Spacer(Modifier.height(Spacing.lg))
-
-                        state.offering.availablePackages.forEach { pkg ->
-                            val isSelected = pkg.identifier == selectedPackageId
-                            PackageCard(
-                                rcPackage = pkg,
-                                isSelected = isSelected,
-                                onClick = { selectedPackageId = pkg.identifier },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = Spacing.xs),
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState())
+                                .padding(horizontal = Spacing.md, vertical = Spacing.lg),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Star,
+                                contentDescription = null,
+                                modifier = Modifier.size(48.dp),
+                                tint = MaterialTheme.colorScheme.primary,
                             )
-                        }
+                            Spacer(Modifier.height(Spacing.sm))
+                            Text(
+                                text = "MindfulTennis Premium",
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                            )
+                            Spacer(Modifier.height(Spacing.xs))
+                            Text(
+                                text = "Unlock full access to all features",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                            )
+                            Spacer(Modifier.height(Spacing.lg))
 
-                        Spacer(Modifier.height(Spacing.lg))
-
-                        val selectedPkg = state.offering.availablePackages
-                            .firstOrNull { it.identifier == selectedPackageId }
-
-                        Button(
-                            onClick = { selectedPkg?.let { onPurchasePackage(it) } },
-                            enabled = selectedPkg != null && !state.isPurchasing,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            if (state.isPurchasing) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(20.dp),
-                                    strokeWidth = 2.dp,
-                                    color = MaterialTheme.colorScheme.onPrimary,
+                            state.offering.availablePackages.forEach { pkg ->
+                                val isSelected = pkg.identifier == selectedPackageId
+                                PackageCard(
+                                    rcPackage = pkg,
+                                    isSelected = isSelected,
+                                    onClick = { selectedPackageId = pkg.identifier },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = Spacing.xs),
                                 )
-                            } else {
-                                Text("Continue")
                             }
-                        }
 
-                        Spacer(Modifier.height(Spacing.sm))
+                            Spacer(Modifier.height(Spacing.lg))
 
-                        TextButton(
-                            onClick = onRestorePurchases,
-                            enabled = !state.isPurchasing,
-                        ) {
-                            Text("Restore Purchases")
+                            val selectedPkg = state.offering.availablePackages
+                                .firstOrNull { it.identifier == selectedPackageId }
+
+                            Button(
+                                onClick = { selectedPkg?.let { onPurchasePackage(it) } },
+                                enabled = selectedPkg != null && !state.isPurchasing,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                if (state.isPurchasing) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(20.dp),
+                                        strokeWidth = 2.dp,
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                    )
+                                } else {
+                                    Text("Continue")
+                                }
+                            }
+
+                            Spacer(Modifier.height(Spacing.sm))
+
+                            TextButton(
+                                onClick = onRestorePurchases,
+                                enabled = !state.isPurchasing,
+                            ) {
+                                Text("Restore Purchases")
+                            }
                         }
                     }
                 }
             }
+
+            // Premium welcome overlay — fades in after purchase
+            AnimatedVisibility(
+                visible = state.purchaseCompleted,
+                enter = fadeIn(),
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                PremiumWelcomeContent()
+            }
+        }
+    }
+}
+
+@Composable
+private fun PremiumWelcomeContent(modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.primaryContainer,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(Spacing.xl),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Icon(
+                imageVector = Icons.Filled.CheckCircle,
+                contentDescription = null,
+                modifier = Modifier.size(88.dp),
+                tint = MaterialTheme.colorScheme.primary,
+            )
+            Spacer(Modifier.height(Spacing.lg))
+            Text(
+                text = "You're Premium!",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+            Spacer(Modifier.height(Spacing.sm))
+            Text(
+                text = "Enjoy full access to all MindfulTennis features. Track every session, review your progress, and keep improving your game.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(Spacing.xl))
+            CircularProgressIndicator(
+                modifier = Modifier.size(28.dp),
+                strokeWidth = 2.dp,
+                color = MaterialTheme.colorScheme.primary,
+            )
         }
     }
 }
