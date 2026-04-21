@@ -226,13 +226,21 @@ class SubscriptionRepositoryImpl(
             val active = premiumEntitlements.firstNotNullOfOrNull { rcInfo.entitlements.active[it] }
             if (active != null) {
                 val expiresAt = active.expirationDateMillis?.let { Instant.fromEpochMilliseconds(it) }
-                return if (active.periodType == PeriodType.TRIAL) {
-                    SubscriptionStatus.Trial(endsAt = expiresAt ?: Instant.fromEpochSeconds(32503680000L))
-                } else {
-                    SubscriptionStatus.Active(
-                        plan = activeSubscriptionRow?.plan,
-                        renewsAt = expiresAt,
-                    )
+                return when {
+                    active.periodType == PeriodType.TRIAL ->
+                        SubscriptionStatus.Trial(endsAt = expiresAt ?: Instant.fromEpochSeconds(32503680000L))
+                    // Supabase webhook already marked this as cancelled — RC entitlement stays
+                    // active until the paid period ends, so we cross-reference here to give
+                    // the user accurate status ("Access until…") rather than "Renews on…".
+                    activeSubscriptionRow?.status == "cancelled" ->
+                        SubscriptionStatus.Cancelled(
+                            accessUntil = expiresAt ?: Instant.fromEpochSeconds(32503680000L)
+                        )
+                    else ->
+                        SubscriptionStatus.Active(
+                            plan = activeSubscriptionRow?.plan,
+                            renewsAt = expiresAt,
+                        )
                 }
             }
         }
