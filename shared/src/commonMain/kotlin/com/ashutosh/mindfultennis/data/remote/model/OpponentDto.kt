@@ -10,6 +10,7 @@ import kotlinx.serialization.Serializable
 data class OpponentDto(
     @SerialName("id") val id: String,
     @SerialName("user_id") val userId: String,
+    @SerialName("sport_id") val sportId: String = "tennis",
     @SerialName("name") val name: String,
     @SerialName("created_at") val createdAt: Long,
 )
@@ -21,6 +22,7 @@ data class OpponentDto(
 data class PartnerDto(
     @SerialName("id") val id: String,
     @SerialName("user_id") val userId: String,
+    @SerialName("sport_id") val sportId: String = "tennis",
     @SerialName("name") val name: String,
     @SerialName("created_at") val createdAt: Long,
 )

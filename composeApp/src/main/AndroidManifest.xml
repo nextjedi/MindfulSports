@@ -25,13 +25,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Deep link for Supabase OAuth callback -->
+            <!-- Deep link for Supabase OAuth callback.
+                 ${deepLinkScheme} is resolved per flavor via manifestPlaceholders in build.gradle.kts. -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
-                    android:scheme="com.ashutosh.mindfultennis"
+                    android:scheme="${deepLinkScheme}"
                     android:host="callback" />
             </intent-filter>
         </activity>

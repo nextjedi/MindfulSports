@@ -1,0 +1,11 @@
+// Squash.xcconfig — Mindful Squash iOS build configuration
+
+PRODUCT_BUNDLE_IDENTIFIER = com.mindful.squash
+PRODUCT_NAME = Mindful Squash
+SPORT_ID = squash
+DEEP_LINK_SCHEME = com.mindful.squash
+BG_TASK_IDENTIFIER = com.mindful.squash.sync
+
+// SUPABASE_URL =
+// SUPABASE_ANON_KEY =
+// REVENUECAT_KEY =

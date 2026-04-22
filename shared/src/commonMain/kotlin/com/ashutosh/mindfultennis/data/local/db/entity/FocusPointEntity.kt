@@ -22,6 +22,9 @@ data class FocusPointEntity(
     @ColumnInfo(name = "created_at")
     val createdAt: Long,
 
+    @ColumnInfo(name = "sport_id")
+    val sportId: String = "tennis",
+
     @ColumnInfo(name = "sync_status")
     val syncStatus: String = SyncStatus.PENDING.name,
 )

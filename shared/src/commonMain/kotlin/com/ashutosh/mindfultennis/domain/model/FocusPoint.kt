@@ -9,6 +9,7 @@ package com.ashutosh.mindfultennis.domain.model
 data class FocusPoint(
     val id: String,
     val userId: String,
+    val sportId: String = "tennis",
     val text: String,
     val category: String? = null,
     val createdAt: Long,

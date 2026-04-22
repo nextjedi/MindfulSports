@@ -1,0 +1,11 @@
+// PopTennis.xcconfig — Mindful Pop Tennis iOS build configuration
+
+PRODUCT_BUNDLE_IDENTIFIER = com.mindful.poptennis
+PRODUCT_NAME = Mindful Pop Tennis
+SPORT_ID = poptennis
+DEEP_LINK_SCHEME = com.mindful.poptennis
+BG_TASK_IDENTIFIER = com.mindful.poptennis.sync
+
+// SUPABASE_URL =
+// SUPABASE_ANON_KEY =
+// REVENUECAT_KEY =

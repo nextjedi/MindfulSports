@@ -1,0 +1,161 @@
+default_platform(:ios)
+
+# ── Sport Registry ────────────────────────────────────────────────────────────
+
+SPORTS = %w[
+  tennis badminton pickleball squash tabletennis
+  padel racquetball platformtennis poptennis beachtennis
+].freeze
+
+SPORT_DISPLAY_NAMES = {
+  "tennis"         => "Tennis",
+  "badminton"      => "Badminton",
+  "pickleball"     => "Pickleball",
+  "squash"         => "Squash",
+  "tabletennis"    => "Table Tennis",
+  "padel"          => "Padel",
+  "racquetball"    => "Racquetball",
+  "platformtennis" => "Platform Tennis",
+  "poptennis"      => "Pop Tennis",
+  "beachtennis"    => "Beach Tennis",
+}.freeze
+
+def bundle_id(sport)
+  "com.mindful.#{sport}"
+end
+
+def scheme_name(sport)
+  "Mindful#{SPORT_DISPLAY_NAMES[sport].gsub(' ', '')}"
+end
+
+# ── iOS Lanes ─────────────────────────────────────────────────────────────────
+
+platform :ios do
+
+  # Called by Azure DevOps for each sport — params injected from Key Vault.
+  # Usage: fastlane ios build_sport sport:"tennis" bundle_id:"com.mindful.tennis" ...
+  lane :build_sport do |options|
+    sport      = options[:sport]
+    bid        = options[:bundle_id] || bundle_id(sport)
+    sport_name = options[:sport_name] || SPORT_DISPLAY_NAMES[sport]
+
+    # Sync code-signing assets for this bundle ID (readonly on CI)
+    match(
+      type:           "appstore",
+      app_identifier: bid,
+      readonly:       true,
+    )
+
+    # Build the IPA using the sport-specific Xcode scheme
+    gym(
+      scheme:           scheme_name(sport),
+      configuration:    "Release-#{sport_name.gsub(' ', '')}",
+      export_method:    "app-store",
+      output_directory: "build/ios/#{sport}",
+      output_name:      "#{scheme_name(sport)}.ipa",
+      xcargs: [
+        "SUPABASE_URL=#{options[:supabase_url] || ''}",
+        "SUPABASE_ANON_KEY=#{options[:supabase_key] || ''}",
+        "REVENUECAT_KEY=#{options[:revenuecat_key] || ''}",
+      ].join(" "),
+    )
+
+    # Upload to TestFlight
+    pilot(
+      app_identifier:                    bid,
+      ipa:                               "build/ios/#{sport}/#{scheme_name(sport)}.ipa",
+      skip_waiting_for_build_processing: true,
+      changelog:                         "Automated build — Mindful #{sport_name}",
+    )
+  end
+
+  # Local: build and upload all 10 sports. Reads credentials from env vars.
+  # Usage: fastlane ios build_all
+  lane :build_all do
+    SPORTS.each do |sport|
+      build_sport(
+        sport:          sport,
+        bundle_id:      bundle_id(sport),
+        sport_name:     SPORT_DISPLAY_NAMES[sport],
+        supabase_url:   ENV["#{sport.upcase}_SUPABASE_URL"],
+        supabase_key:   ENV["#{sport.upcase}_SUPABASE_ANON_KEY"],
+        revenuecat_key: ENV["#{sport.upcase}_REVENUECAT_IOS_KEY"],
+      )
+    end
+  end
+
+  # One-time setup: generate/sync code-signing certs for all 10 bundle IDs.
+  # Run locally on a machine with Apple Developer access.
+  # Usage: fastlane ios setup_signing
+  lane :setup_signing do
+    SPORTS.each do |sport|
+      match(
+        type:           "appstore",
+        app_identifier: bundle_id(sport),
+        readonly:       false,
+      )
+    end
+  end
+
+  # One-time: create 10 App Store Connect listings via Fastlane `produce`.
+  # Usage: fastlane ios create_listings
+  lane :create_listings do
+    SPORTS.each do |sport|
+      produce(
+        app_identifier: bundle_id(sport),
+        app_name:       "Mindful #{SPORT_DISPLAY_NAMES[sport]}",
+        language:       "English",
+        app_version:    "2.0",
+        sku:            "mindful_#{sport}",
+      )
+    end
+  end
+
+end
+
+# ── Android Lanes ─────────────────────────────────────────────────────────────
+
+platform :android do
+
+  # Build a single sport flavor AAB and upload to Play Store internal track.
+  # Usage: fastlane android build_sport sport:"tennis" keystore_path:"/path/to/ks.jks" ...
+  lane :build_sport do |options|
+    sport = options[:sport]
+
+    gradle(
+      task:        "bundle",
+      flavor:      sport.capitalize,
+      build_type:  "Release",
+      project_dir: "./",
+      flags:       "--no-daemon",
+      properties: {
+        "android.injected.signing.store.file"     => options[:keystore_path],
+        "android.injected.signing.store.password" => options[:keystore_password],
+        "android.injected.signing.key.alias"      => options[:key_alias],
+        "android.injected.signing.key.password"   => options[:key_password],
+      },
+    )
+
+    supply(
+      package_name:   bundle_id(sport),
+      aab:            "composeApp/build/outputs/bundle/#{sport}Release/*.aab",
+      track:          "internal",
+      release_status: "draft",
+    )
+  end
+
+  # Local: build all 10 sport flavors. Reads credentials from env vars.
+  # Usage: fastlane android build_all
+  lane :build_all do
+    SPORTS.each do |sport|
+      build_sport(
+        sport:             sport,
+        keystore_path:     ENV["#{sport.upcase}_KEYSTORE_PATH"],
+        keystore_password: ENV["#{sport.upcase}_KEYSTORE_PASSWORD"],
+        key_alias:         ENV["#{sport.upcase}_KEY_ALIAS"],
+        key_password:      ENV["#{sport.upcase}_KEY_PASSWORD"],
+      )
+    end
+  end
+
+end

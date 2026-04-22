@@ -10,6 +10,7 @@ import kotlinx.serialization.Serializable
 data class FocusPointDto(
     @SerialName("id") val id: String,
     @SerialName("user_id") val userId: String,
+    @SerialName("sport_id") val sportId: String = "tennis",
     @SerialName("text") val text: String,
     @SerialName("category") val category: String? = null,
     @SerialName("created_at") val createdAt: Long,

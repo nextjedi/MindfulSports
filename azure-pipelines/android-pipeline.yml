@@ -1,0 +1,68 @@
+# Android CI/CD pipeline — builds all 10 sport AABs in parallel and uploads to Play Store.
+# Triggers on pushes to main that touch composeApp or shared.
+# Credentials are stored in Azure Key Vault (mindful-sports-kv) and loaded per sport.
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - composeApp/**
+      - shared/**
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+# Matrix strategy: each cell = one sport build running in its own parallel job
+strategy:
+  matrix:
+    Tennis:
+      sportId: tennis
+      sportFlavorName: Tennis
+      packageName: com.mindful.tennis
+    Badminton:
+      sportId: badminton
+      sportFlavorName: Badminton
+      packageName: com.mindful.badminton
+    Pickleball:
+      sportId: pickleball
+      sportFlavorName: Pickleball
+      packageName: com.mindful.pickleball
+    Squash:
+      sportId: squash
+      sportFlavorName: Squash
+      packageName: com.mindful.squash
+    TableTennis:
+      sportId: tabletennis
+      sportFlavorName: Tabletennis
+      packageName: com.mindful.tabletennis
+    Padel:
+      sportId: padel
+      sportFlavorName: Padel
+      packageName: com.mindful.padel
+    Racquetball:
+      sportId: racquetball
+      sportFlavorName: Racquetball
+      packageName: com.mindful.racquetball
+    PlatformTennis:
+      sportId: platformtennis
+      sportFlavorName: Platformtennis
+      packageName: com.mindful.platformtennis
+    PopTennis:
+      sportId: poptennis
+      sportFlavorName: Poptennis
+      packageName: com.mindful.poptennis
+    BeachTennis:
+      sportId: beachtennis
+      sportFlavorName: Beachtennis
+      packageName: com.mindful.beachtennis
+
+  maxParallel: 5  # Run 5 sport builds simultaneously
+
+steps:
+  - template: templates/android-sport-build.yml
+    parameters:
+      sportId: $(sportId)
+      sportFlavorName: $(sportFlavorName)
+      packageName: $(packageName)

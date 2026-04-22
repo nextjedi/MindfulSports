@@ -10,6 +10,7 @@ import kotlinx.serialization.Serializable
 data class SessionDto(
     @SerialName("id") val id: String,
     @SerialName("user_id") val userId: String,
+    @SerialName("sport_id") val sportId: String = "tennis",
     @SerialName("focus_note") val focusNote: String,
     @SerialName("started_at") val startedAt: Long,
     @SerialName("ended_at") val endedAt: Long? = null,

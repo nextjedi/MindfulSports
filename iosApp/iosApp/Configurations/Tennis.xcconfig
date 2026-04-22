@@ -1,0 +1,15 @@
+// Tennis.xcconfig — Mindful Tennis iOS build configuration
+// Link this file to the Release and Debug configurations for the Tennis scheme in Xcode.
+// Secret values (SUPABASE_URL, SUPABASE_ANON_KEY, REVENUECAT_KEY) are injected
+// by the CI pipeline (Azure DevOps Key Vault) and must NOT be committed.
+
+PRODUCT_BUNDLE_IDENTIFIER = com.mindful.tennis
+PRODUCT_NAME = Mindful Tennis
+SPORT_ID = tennis
+DEEP_LINK_SCHEME = com.mindful.tennis
+BG_TASK_IDENTIFIER = com.mindful.tennis.sync
+
+// Credentials — set in CI or in a local Tennis.xcconfig.local (gitignored)
+// SUPABASE_URL =
+// SUPABASE_ANON_KEY =
+// REVENUECAT_KEY =

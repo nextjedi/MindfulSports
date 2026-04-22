@@ -1,0 +1,11 @@
+// Pickleball.xcconfig — Mindful Pickleball iOS build configuration
+
+PRODUCT_BUNDLE_IDENTIFIER = com.mindful.pickleball
+PRODUCT_NAME = Mindful Pickleball
+SPORT_ID = pickleball
+DEEP_LINK_SCHEME = com.mindful.pickleball
+BG_TASK_IDENTIFIER = com.mindful.pickleball.sync
+
+// SUPABASE_URL =
+// SUPABASE_ANON_KEY =
+// REVENUECAT_KEY =

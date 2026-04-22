@@ -6,6 +6,7 @@ package com.ashutosh.mindfultennis.domain.model
 data class Opponent(
     val id: String,
     val userId: String,
+    val sportId: String = "tennis",
     val name: String,
     val createdAt: Long,
 )

@@ -3,6 +3,7 @@ package com.ashutosh.mindfultennis.di
 import androidx.room.RoomDatabase
 import com.ashutosh.mindfultennis.data.local.datastore.UserPreferences
 import com.ashutosh.mindfultennis.data.local.db.MindfulDatabase
+import com.ashutosh.mindfultennis.sport.SportConfig
 import com.ashutosh.mindfultennis.data.remote.SupabaseSessionDataSource
 import com.ashutosh.mindfultennis.data.remote.SupabaseUserDataSource
 import com.ashutosh.mindfultennis.data.repository.AuthRepository
@@ -59,10 +60,15 @@ val commonModule = module {
         }
     }
 
+    // ── SportConfig ────────────────────────────────────────────────────
+
+    single<SportConfig> { get<AppConfig>().sportConfig }
+
     // ── Room Database ──────────────────────────────────────────────────
 
     single<MindfulDatabase> {
         get<RoomDatabase.Builder<MindfulDatabase>>()
+            .addMigrations(MindfulDatabase.MIGRATION_2_3)
             .fallbackToDestructiveMigration(true)
             .build()
     }

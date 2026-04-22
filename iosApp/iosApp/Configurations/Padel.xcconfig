@@ -1,0 +1,11 @@
+// Padel.xcconfig — Mindful Padel iOS build configuration
+
+PRODUCT_BUNDLE_IDENTIFIER = com.mindful.padel
+PRODUCT_NAME = Mindful Padel
+SPORT_ID = padel
+DEEP_LINK_SCHEME = com.mindful.padel
+BG_TASK_IDENTIFIER = com.mindful.padel.sync
+
+// SUPABASE_URL =
+// SUPABASE_ANON_KEY =
+// REVENUECAT_KEY =

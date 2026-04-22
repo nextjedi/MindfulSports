@@ -13,13 +13,13 @@
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
-    <string>Mindful Tennis</string>
+    <string>$(PRODUCT_NAME)</string>
     <key>CFBundlePackageType</key>
     <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.4</string>
+    <string>2.0</string>
     <key>CFBundleVersion</key>
-    <string>7</string>
+    <string>18</string>
     <key>LSRequiresIPhoneOS</key>
     <true/>
     <key>UIApplicationSceneManifest</key>
@@ -35,22 +35,28 @@
     <array>
         <string>UIInterfaceOrientationPortrait</string>
     </array>
+    <!-- OAuth deep-link scheme — resolved from xcconfig DEEP_LINK_SCHEME per sport scheme -->
     <key>CFBundleURLTypes</key>
     <array>
         <dict>
             <key>CFBundleURLSchemes</key>
             <array>
-                <string>com.nextjedi.mindful-tennis</string>
+                <string>$(DEEP_LINK_SCHEME)</string>
             </array>
         </dict>
     </array>
+    <!-- Credentials injected by xcconfig (set in CI, never committed) -->
     <key>SUPABASE_URL</key>
     <string>$(SUPABASE_URL)</string>
     <key>SUPABASE_ANON_KEY</key>
     <string>$(SUPABASE_ANON_KEY)</string>
+    <!-- Sport identity — resolved from xcconfig SPORT_ID per sport scheme -->
+    <key>SPORT_ID</key>
+    <string>$(SPORT_ID)</string>
+    <!-- Background sync task identifier — sport-scoped to avoid cross-app conflicts -->
     <key>BGTaskSchedulerPermittedIdentifiers</key>
     <array>
-        <string>com.nextjedi.mindful-tennis.sync</string>
+        <string>$(BG_TASK_IDENTIFIER)</string>
     </array>
 </dict>
 </plist>

@@ -21,6 +21,7 @@ import com.ashutosh.mindfultennis.domain.model.SetScore
 fun SessionEntity.toDomain(): Session = Session(
     id = id,
     userId = userId,
+    sportId = sportId,
     focusNote = focusNote,
     startedAt = startedAt,
     endedAt = endedAt,
@@ -40,6 +41,7 @@ fun SessionEntity.toDomain(): Session = Session(
 fun Session.toEntity(syncStatus: SyncStatus = SyncStatus.PENDING): SessionEntity = SessionEntity(
     id = id,
     userId = userId,
+    sportId = sportId,
     focusNote = focusNote,
     startedAt = startedAt,
     endedAt = endedAt,
@@ -60,6 +62,7 @@ fun Session.toEntity(syncStatus: SyncStatus = SyncStatus.PENDING): SessionEntity
 fun SessionEntity.toDto(): SessionDto = SessionDto(
     id = id,
     userId = userId,
+    sportId = sportId,
     focusNote = focusNote,
     startedAt = startedAt,
     endedAt = endedAt,
@@ -79,6 +82,7 @@ fun SessionEntity.toDto(): SessionDto = SessionDto(
 fun SessionDto.toEntity(syncStatus: SyncStatus = SyncStatus.SYNCED): SessionEntity = SessionEntity(
     id = id,
     userId = userId,
+    sportId = sportId,
     focusNote = focusNote,
     startedAt = startedAt,
     endedAt = endedAt,
@@ -169,6 +173,7 @@ fun PartnerRatingDto.toEntity(syncStatus: SyncStatus = SyncStatus.SYNCED): Partn
 fun FocusPointEntity.toDomain(): FocusPoint = FocusPoint(
     id = id,
     userId = userId,
+    sportId = sportId,
     text = text,
     category = category,
     createdAt = createdAt,
@@ -178,6 +183,7 @@ fun FocusPoint.toEntity(syncStatus: SyncStatus = SyncStatus.PENDING): FocusPoint
     FocusPointEntity(
         id = id,
         userId = userId,
+        sportId = sportId,
         text = text,
         category = category,
         createdAt = createdAt,
@@ -187,6 +193,7 @@ fun FocusPoint.toEntity(syncStatus: SyncStatus = SyncStatus.PENDING): FocusPoint
 fun FocusPointEntity.toDto(): FocusPointDto = FocusPointDto(
     id = id,
     userId = userId,
+    sportId = sportId,
     text = text,
     category = category,
     createdAt = createdAt,
@@ -196,6 +203,7 @@ fun FocusPointDto.toEntity(syncStatus: SyncStatus = SyncStatus.SYNCED): FocusPoi
     FocusPointEntity(
         id = id,
         userId = userId,
+        sportId = sportId,
         text = text,
         category = category,
         createdAt = createdAt,
@@ -207,6 +215,7 @@ fun FocusPointDto.toEntity(syncStatus: SyncStatus = SyncStatus.SYNCED): FocusPoi
 fun OpponentEntity.toDomain(): Opponent = Opponent(
     id = id,
     userId = userId,
+    sportId = sportId,
     name = name,
     createdAt = createdAt,
 )
@@ -214,6 +223,7 @@ fun OpponentEntity.toDomain(): Opponent = Opponent(
 fun Opponent.toEntity(syncStatus: SyncStatus = SyncStatus.PENDING): OpponentEntity = OpponentEntity(
     id = id,
     userId = userId,
+    sportId = sportId,
     name = name,
     createdAt = createdAt,
     syncStatus = syncStatus.name,
@@ -222,6 +232,7 @@ fun Opponent.toEntity(syncStatus: SyncStatus = SyncStatus.PENDING): OpponentEnti
 fun OpponentEntity.toDto(): OpponentDto = OpponentDto(
     id = id,
     userId = userId,
+    sportId = sportId,
     name = name,
     createdAt = createdAt,
 )
@@ -230,6 +241,7 @@ fun OpponentDto.toEntity(syncStatus: SyncStatus = SyncStatus.SYNCED): OpponentEn
     OpponentEntity(
         id = id,
         userId = userId,
+        sportId = sportId,
         name = name,
         createdAt = createdAt,
         syncStatus = syncStatus.name,
@@ -240,6 +252,7 @@ fun OpponentDto.toEntity(syncStatus: SyncStatus = SyncStatus.SYNCED): OpponentEn
 fun PartnerEntity.toDomain(): Partner = Partner(
     id = id,
     userId = userId,
+    sportId = sportId,
     name = name,
     createdAt = createdAt,
 )
@@ -247,6 +260,7 @@ fun PartnerEntity.toDomain(): Partner = Partner(
 fun Partner.toEntity(syncStatus: SyncStatus = SyncStatus.PENDING): PartnerEntity = PartnerEntity(
     id = id,
     userId = userId,
+    sportId = sportId,
     name = name,
     createdAt = createdAt,
     syncStatus = syncStatus.name,
@@ -255,6 +269,7 @@ fun Partner.toEntity(syncStatus: SyncStatus = SyncStatus.PENDING): PartnerEntity
 fun PartnerEntity.toDto(): PartnerDto = PartnerDto(
     id = id,
     userId = userId,
+    sportId = sportId,
     name = name,
     createdAt = createdAt,
 )
@@ -262,6 +277,7 @@ fun PartnerEntity.toDto(): PartnerDto = PartnerDto(
 fun PartnerDto.toEntity(syncStatus: SyncStatus = SyncStatus.SYNCED): PartnerEntity = PartnerEntity(
     id = id,
     userId = userId,
+    sportId = sportId,
     name = name,
     createdAt = createdAt,
     syncStatus = syncStatus.name,

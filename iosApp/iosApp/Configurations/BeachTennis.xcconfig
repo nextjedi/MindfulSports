@@ -1,0 +1,11 @@
+// BeachTennis.xcconfig — Mindful Beach Tennis iOS build configuration
+
+PRODUCT_BUNDLE_IDENTIFIER = com.mindful.beachtennis
+PRODUCT_NAME = Mindful Beach Tennis
+SPORT_ID = beachtennis
+DEEP_LINK_SCHEME = com.mindful.beachtennis
+BG_TASK_IDENTIFIER = com.mindful.beachtennis.sync
+
+// SUPABASE_URL =
+// SUPABASE_ANON_KEY =
+// REVENUECAT_KEY =

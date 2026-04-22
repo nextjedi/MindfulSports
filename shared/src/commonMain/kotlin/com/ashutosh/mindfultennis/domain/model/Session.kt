@@ -7,6 +7,7 @@ package com.ashutosh.mindfultennis.domain.model
 data class Session(
     val id: String,
     val userId: String,
+    val sportId: String = "tennis",
     val focusNote: String,
     val startedAt: Long,
     val endedAt: Long? = null,

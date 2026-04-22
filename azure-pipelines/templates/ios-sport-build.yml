@@ -1,0 +1,57 @@
+# Reusable template — build and publish one iOS sport IPA to TestFlight.
+# Called from ios-pipeline.yml via the matrix strategy.
+# Fastlane handles xcodebuild complexity; Azure DevOps handles scheduling and secrets.
+
+parameters:
+  - name: sportId    # e.g. "tennis"
+    type: string
+  - name: sportName  # e.g. "Tennis" (display name for the scheme)
+    type: string
+  - name: bundleId   # e.g. "com.mindful.tennis"
+    type: string
+
+steps:
+
+  # 1. Load sport-specific secrets from Azure Key Vault
+  - task: AzureKeyVault@2
+    displayName: 'Load ${{ parameters.sportId }} secrets from Key Vault'
+    inputs:
+      azureSubscription: 'MindfulSports-ServiceConnection'
+      KeyVaultName: 'mindful-sports-kv'
+      SecretsFilter: >
+        ${{ parameters.sportId }}-supabase-url,
+        ${{ parameters.sportId }}-supabase-anon-key,
+        ${{ parameters.sportId }}-revenuecat-ios-key,
+        ${{ parameters.sportId }}-match-certificates-password
+
+  # 2. Install distribution certificate from Azure Secure Files
+  - task: InstallAppleCertificate@2
+    displayName: 'Install distribution certificate for ${{ parameters.sportId }}'
+    inputs:
+      certSecureFile: 'distribution.p12'
+      certPwd: '$(${{ parameters.sportId }}-match-certificates-password)'
+
+  # 3. Install provisioning profile from Azure Secure Files
+  - task: InstallAppleProvisioningProfile@1
+    displayName: 'Install provisioning profile for ${{ parameters.sportId }}'
+    inputs:
+      provProfileSecureFile: '${{ parameters.sportId }}_distribution.mobileprovision'
+
+  # 4. Install Ruby dependencies for Fastlane
+  - task: UseRubyVersion@0
+    inputs:
+      versionSpec: '>= 3.0'
+
+  - bash: bundle install
+    displayName: 'Install Fastlane (bundle install)'
+
+  # 5. Fastlane build + TestFlight upload
+  - bash: |
+      bundle exec fastlane ios build_sport \
+        sport:"${{ parameters.sportId }}" \
+        sport_name:"${{ parameters.sportName }}" \
+        bundle_id:"${{ parameters.bundleId }}" \
+        supabase_url:"$(${{ parameters.sportId }}-supabase-url)" \
+        supabase_key:"$(${{ parameters.sportId }}-supabase-anon-key)" \
+        revenuecat_key:"$(${{ parameters.sportId }}-revenuecat-ios-key)"
+    displayName: 'Fastlane: build and upload Mindful ${{ parameters.sportName }}'

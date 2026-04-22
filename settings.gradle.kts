@@ -24,6 +24,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MindfulTennis"
+rootProject.name = "MindfulSports"
 include(":composeApp")
 include(":shared")

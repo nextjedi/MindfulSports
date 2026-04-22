@@ -1,0 +1,13 @@
+# Matchfile — code signing cert/profile storage configuration
+#
+# All 10 distribution certificates and provisioning profiles are stored in
+# Azure Blob Storage. CI agents download (readonly); a designated team member
+# regenerates certs when they expire (readonly: false).
+
+storage_mode("azure_storage")
+azure_storage_account(ENV["AZURE_STORAGE_ACCOUNT"])
+azure_storage_access_key(ENV["AZURE_STORAGE_ACCESS_KEY"])
+azure_storage_container("fastlane-match-certs")
+
+type("appstore")
+readonly(true) # CI only reads — never generates new certs

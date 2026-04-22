@@ -1,0 +1,11 @@
+// TableTennis.xcconfig — Mindful Table Tennis iOS build configuration
+
+PRODUCT_BUNDLE_IDENTIFIER = com.mindful.tabletennis
+PRODUCT_NAME = Mindful Table Tennis
+SPORT_ID = tabletennis
+DEEP_LINK_SCHEME = com.mindful.tabletennis
+BG_TASK_IDENTIFIER = com.mindful.tabletennis.sync
+
+// SUPABASE_URL =
+// SUPABASE_ANON_KEY =
+// REVENUECAT_KEY =

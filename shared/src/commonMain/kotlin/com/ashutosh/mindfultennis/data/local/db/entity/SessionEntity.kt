@@ -56,6 +56,9 @@ data class SessionEntity(
     @ColumnInfo(name = "schema_version")
     val schemaVersion: Int = 1,
 
+    @ColumnInfo(name = "sport_id")
+    val sportId: String = "tennis",
+
     @ColumnInfo(name = "sync_status")
     val syncStatus: String = SyncStatus.PENDING.name,
 )
