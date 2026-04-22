@@ -1,4 +1,4 @@
-# iOS CI/CD pipeline — builds all 10 sport IPAs in parallel and uploads to TestFlight.
+# iOS CI/CD pipeline — builds the Mindful Sports IPA and uploads to TestFlight.
 # Triggers on pushes to main that touch iosApp or shared.
 # Fastlane handles Xcode complexity; Azure DevOps handles scheduling and secrets injection.
 
@@ -14,55 +14,5 @@ trigger:
 pool:
   vmImage: 'macOS-14'
 
-# Matrix strategy: each cell = one sport build running in its own parallel job
-strategy:
-  matrix:
-    Tennis:
-      sportId: tennis
-      sportName: Tennis
-      bundleId: com.mindful.tennis
-    Badminton:
-      sportId: badminton
-      sportName: Badminton
-      bundleId: com.mindful.badminton
-    Pickleball:
-      sportId: pickleball
-      sportName: Pickleball
-      bundleId: com.mindful.pickleball
-    Squash:
-      sportId: squash
-      sportName: Squash
-      bundleId: com.mindful.squash
-    TableTennis:
-      sportId: tabletennis
-      sportName: "Table Tennis"
-      bundleId: com.mindful.tabletennis
-    Padel:
-      sportId: padel
-      sportName: Padel
-      bundleId: com.mindful.padel
-    Racquetball:
-      sportId: racquetball
-      sportName: Racquetball
-      bundleId: com.mindful.racquetball
-    PlatformTennis:
-      sportId: platformtennis
-      sportName: "Platform Tennis"
-      bundleId: com.mindful.platformtennis
-    PopTennis:
-      sportId: poptennis
-      sportName: "Pop Tennis"
-      bundleId: com.mindful.poptennis
-    BeachTennis:
-      sportId: beachtennis
-      sportName: "Beach Tennis"
-      bundleId: com.mindful.beachtennis
-
-  maxParallel: 5  # Run 5 sport builds simultaneously
-
 steps:
-  - template: templates/ios-sport-build.yml
-    parameters:
-      sportId: $(sportId)
-      sportName: $(sportName)
-      bundleId: $(bundleId)
+  - template: templates/ios-build.yml

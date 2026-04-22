@@ -1,8 +1,8 @@
 # Matchfile — code signing cert/profile storage configuration
 #
-# All 10 distribution certificates and provisioning profiles are stored in
-# Azure Blob Storage. CI agents download (readonly); a designated team member
-# regenerates certs when they expire (readonly: false).
+# Distribution certificate and provisioning profile for com.mindful.sports are
+# stored in Azure Blob Storage. CI agents download (readonly); a designated team
+# member regenerates certs when they expire (readonly: false).
 
 storage_mode("azure_storage")
 azure_storage_account(ENV["AZURE_STORAGE_ACCOUNT"])

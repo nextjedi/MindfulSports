@@ -50,6 +50,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel,
     onNavigateBack: () -> Unit,
     onLoggedOut: () -> Unit,
+    onChangeSport: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -79,6 +80,7 @@ fun SettingsScreen(
         state = uiState,
         onEvent = viewModel::onEvent,
         onNavigateBack = onNavigateBack,
+        onChangeSport = onChangeSport,
         snackbarHostState = snackbarHostState,
         modifier = modifier,
     )
@@ -90,6 +92,7 @@ private fun SettingsScreenContent(
     state: SettingsUiState,
     onEvent: (SettingsUiEvent) -> Unit,
     onNavigateBack: () -> Unit,
+    onChangeSport: () -> Unit,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
 ) {
@@ -141,6 +144,24 @@ private fun SettingsScreenContent(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+
+            Spacer(Modifier.height(Spacing.lg))
+
+            // Sport section
+            Text(
+                text = "Sport",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+
+            Spacer(Modifier.height(Spacing.sm))
+
+            OutlinedButton(
+                onClick = onChangeSport,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Change Sport")
             }
 
             Spacer(Modifier.height(Spacing.lg))

@@ -3,7 +3,7 @@ package com.ashutosh.mindfultennis.di
 import androidx.room.RoomDatabase
 import com.ashutosh.mindfultennis.data.local.datastore.UserPreferences
 import com.ashutosh.mindfultennis.data.local.db.MindfulDatabase
-import com.ashutosh.mindfultennis.sport.SportConfig
+import com.ashutosh.mindfultennis.domain.usecase.GetCurrentSportConfigUseCase
 import com.ashutosh.mindfultennis.data.remote.SupabaseSessionDataSource
 import com.ashutosh.mindfultennis.data.remote.SupabaseUserDataSource
 import com.ashutosh.mindfultennis.data.repository.AuthRepository
@@ -32,6 +32,7 @@ import com.ashutosh.mindfultennis.ui.login.LoginViewModel
 import com.ashutosh.mindfultennis.ui.sessions.SessionDetailViewModel
 import com.ashutosh.mindfultennis.ui.sessions.SessionsListViewModel
 import com.ashutosh.mindfultennis.ui.settings.SettingsViewModel
+import com.ashutosh.mindfultennis.ui.sportselection.SportSelectionViewModel
 import com.ashutosh.mindfultennis.ui.startsession.StartSessionViewModel
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
@@ -59,10 +60,6 @@ val commonModule = module {
             install(Realtime)
         }
     }
-
-    // ── SportConfig ────────────────────────────────────────────────────
-
-    single<SportConfig> { get<AppConfig>().sportConfig }
 
     // ── Room Database ──────────────────────────────────────────────────
 
@@ -168,6 +165,7 @@ val commonModule = module {
     factory { GetWinLossRecordUseCase(get()) }
     factory { GetAspectAveragesUseCase(get()) }
     factory { GetSessionsUseCase(get()) }
+    factory { GetCurrentSportConfigUseCase(get()) }
 
     // ── ViewModels ─────────────────────────────────────────────────────
 
@@ -187,6 +185,8 @@ val commonModule = module {
     }
 
     viewModel { SettingsViewModel(get(), get(), get(), get(), get()) }
+
+    viewModel { SportSelectionViewModel(get()) }
 
     viewModel {
         LoginViewModel(

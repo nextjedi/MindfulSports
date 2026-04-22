@@ -25,6 +25,7 @@ class UserPreferences(
         private val KEY_ASPECT_DURATION_FILTER = stringPreferencesKey("aspect_duration_filter")
         private val KEY_ASPECT_RATING_TYPE = stringPreferencesKey("aspect_rating_type")
         private val KEY_HAS_COMPLETED_INITIAL_SYNC = booleanPreferencesKey("has_completed_initial_sync")
+        private val KEY_SELECTED_SPORT_ID = stringPreferencesKey("selected_sport_id")
     }
 
     // ── Last Sync Timestamp ───────────────────────────────────────────
@@ -116,6 +117,27 @@ class UserPreferences(
     suspend fun setHasCompletedInitialSync(completed: Boolean) {
         dataStore.edit { prefs ->
             prefs[KEY_HAS_COMPLETED_INITIAL_SYNC] = completed
+        }
+    }
+
+    // ── Selected Sport ────────────────────────────────────────────────
+    //
+    // Null means the user has not yet chosen a sport.
+    // NavGraph shows SportSelectionScreen when this is null after login.
+
+    val selectedSportId: Flow<String?> = dataStore.data.map { prefs ->
+        prefs[KEY_SELECTED_SPORT_ID]
+    }
+
+    suspend fun setSelectedSportId(sportId: String) {
+        dataStore.edit { prefs ->
+            prefs[KEY_SELECTED_SPORT_ID] = sportId
+        }
+    }
+
+    suspend fun clearSelectedSportId() {
+        dataStore.edit { prefs ->
+            prefs.remove(KEY_SELECTED_SPORT_ID)
         }
     }
 

@@ -5,6 +5,7 @@ package com.ashutosh.mindfultennis.navigation
  */
 sealed class Route(val route: String) {
     data object Login : Route("login")
+    data object SportSelection : Route("sport_selection")
     data object Home : Route("home")
     data object StartSession : Route("start_session")
 

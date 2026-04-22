@@ -1,5 +1,5 @@
 # Appfile — app identifiers and team info
-# app_identifier is overridden per Fastlane lane via the `bundle_id` option.
 
+app_identifier("com.mindful.sports")
 itc_team_id(ENV["APP_STORE_CONNECT_TEAM_ID"])
 team_id(ENV["APPLE_TEAM_ID"])

@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.collectAsState
 import androidx.navigation.compose.rememberNavController
+import com.ashutosh.mindfultennis.data.local.datastore.UserPreferences
 import com.ashutosh.mindfultennis.data.repository.AuthRepository
 import com.ashutosh.mindfultennis.data.repository.AuthState
 import com.ashutosh.mindfultennis.navigation.NavGraph
@@ -37,7 +38,12 @@ fun App() {
     MindfulTennisTheme {
         val navController = rememberNavController()
         val authRepository = koinInject<AuthRepository>()
+        val userPreferences = koinInject<UserPreferences>()
         val snackbarHostState = remember { SnackbarHostState() }
+
+        val selectedSportId by userPreferences.selectedSportId
+            .collectAsState(initial = null)
+        val hasSportSelected = selectedSportId != null
 
         // Only timeout the initial Loading state — once auth resolves, let the
         // StateFlow sit quietly without killing the subscription.
@@ -82,6 +88,7 @@ fun App() {
                 NavGraph(
                     navController = navController,
                     isAuthenticated = isAuthenticated,
+                    hasSportSelected = hasSportSelected,
                     pendingCancelSessionId = null,
                 )
             }

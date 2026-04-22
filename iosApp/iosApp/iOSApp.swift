@@ -7,16 +7,12 @@ struct iOSApp: App {
     init() {
         let supabaseUrl   = Bundle.main.infoDictionary?["SUPABASE_URL"]   as? String ?? ""
         let supabaseKey   = Bundle.main.infoDictionary?["SUPABASE_ANON_KEY"] as? String ?? ""
-        let sportId       = Bundle.main.infoDictionary?["SPORT_ID"]       as? String ?? "tennis"
-        let bgTaskId      = Bundle.main.infoDictionary?["BGTaskSchedulerPermittedIdentifiers"] as? [String]
-        let syncTaskId    = bgTaskId?.first ?? "com.mindful.tennis.sync"
+        let syncTaskId    = "com.mindful.sports.sync"
 
-        // Boot Koin with the sport-specific config.
-        // SportRegistry.fromId(sportId) selects the correct SportConfig.
+        // Boot Koin — sport selection is handled at runtime via UserPreferences.
         KoinHelperKt.doInitKoin(
             supabaseUrl: supabaseUrl,
-            supabaseAnonKey: supabaseKey,
-            sportId: sportId
+            supabaseAnonKey: supabaseKey
         )
 
         // Register the nightly sync background task handler.
